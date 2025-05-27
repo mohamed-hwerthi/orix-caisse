@@ -26,7 +26,7 @@ import { LoaderComponent } from '../../../../../shared/components/loader/loader.
 import { PaymentDetails } from '../../../../admin/dashboard/components/payment/payment-create-modal/payment-create-modal.component';
 
 interface CartItem extends MenuItem {
-  quantity: number;
+  quantityToSale: number;
 }
 
 @Component({
@@ -97,7 +97,7 @@ export class CartComponent implements OnInit {
             return {
               ...storeItem,
 
-              quantity: existingItem ? existingItem.quantity : 1,
+              quantityToSale: existingItem ? existingItem.quantityToSale : 1,
             };
           }) as CartItem[];
         }),
@@ -127,30 +127,35 @@ export class CartComponent implements OnInit {
     });
   }
   increaseQuantity(cartItem: CartItem): void {
+    if(cartItem.quantityToSale>cartItem.quantity){
+      this.toastr.error('Quantity unavailable');
+      return ;
+    }
     const item = this.cartItems.find((i) => i.id === cartItem.id);
     if (item) {
-      item.quantity += 1;
+      item.quantityToSale += 1;
       this.calculateTotalPrice();
     }
   }
 
   decreaseQuantity(cartItem: CartItem): void {
-    if (cartItem.quantity > 1) {
-      cartItem.quantity -= 1;
+    if (cartItem.quantityToSale > 1) {
+      cartItem.quantityToSale -= 1;
       this.calculateTotalPrice();
     }
   }
 
   calculateTotalPrice(): void {
-    this.totalPrice = this.cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    this.totalPrice = this.cartItems.reduce((total, item) => total + item.price * item.quantityToSale, 0);
     this.amountToChange = this.totalPrice;
   }
 
   onQuantityChange(event: Event, cartItem: CartItem): void {
     const inputElement = event.target as HTMLInputElement;
-    const quantity = inputElement.valueAsNumber;
-    if (quantity && quantity > 0) {
-      cartItem.quantity = quantity;
+    
+    const quantityToSale = inputElement.valueAsNumber;
+    if (quantityToSale && quantityToSale > 0) {
+      cartItem.quantityToSale = quantityToSale;
       this.calculateTotalPrice();
     }
   }
@@ -230,7 +235,7 @@ export class CartComponent implements OnInit {
       const orderData: OrderSubmission = {
         userEmail: currentUser.email,
         menuItemQuantities: this.cartItems.reduce((acc, item) => {
-          acc[item.id] = item.quantity;
+          acc[item.id] = item.quantityToSale;
           return acc;
         }, {} as { [menuItemId: number]: number }),
         createdOn: new Date().toISOString(),
@@ -284,7 +289,7 @@ export class CartComponent implements OnInit {
       const orderData: OrderSubmission = {
         userEmail: currentUser.email,
         menuItemQuantities: this.cartItems.reduce((acc, item) => {
-          acc[item.id] = item.quantity;
+          acc[item.id] = item.quantityToSale;
           return acc;
         }, {} as { [menuItemId: number]: number }),
         createdOn: new Date().toISOString(),

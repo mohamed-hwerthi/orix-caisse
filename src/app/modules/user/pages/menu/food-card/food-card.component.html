@@ -8,7 +8,19 @@
       </div>
 
       <div class="flex min-h-[100px] flex-col p-4 sm:p-6">
-        <p class="mb-1 text-[22px] font-bold leading-7 text-gray-700 dark:text-white">{{ item.title }}</p>
+        <div class="flex flex-row  justify-content-between">
+          <p class="mb-1 text-[22px] font-bold leading-7 text-gray-700 dark:text-white">{{ item.title }}</p>
+          <p  
+            class="ml-16 font-semibold"
+            [ngClass]="{
+              'text-green-600': item.quantity > 0,
+              'text-red-600': item.quantity === 0
+            }">
+            {{ item.quantity > 0 ? 'In Stock' : 'Out of Stock' }}
+          </p>
+        </div>
+
+        <!-- Stock status display -->
 
         <div class="flex flex-row space-x-4">
           <div class="flex items-center space-x-1">
@@ -46,6 +58,7 @@
         -->
 
         <button
+           [disabled]="item.quantity === 0"
           (click)="addToCart(item)"
           class="mt-4 w-full cursor-pointer rounded-[14px] bg-primary px-4 py-3 text-center font-medium capitalize tracking-wide text-white transition-colors duration-300 focus:outline-none focus:ring focus:ring-opacity-80 hover:opacity-75">
           Ajouter au panier

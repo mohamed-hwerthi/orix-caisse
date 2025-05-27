@@ -16,6 +16,8 @@ export interface MenuItem {
   reviewCount: number;
   averageRating: number;
   medias: Media[];
+  quantity : number ; 
+  
 }
 
 export interface PaginatedResponseDTO<T> {
