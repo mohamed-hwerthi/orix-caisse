@@ -23,6 +23,10 @@ import { selectCartItems } from '../../../../../core/state/shopping-cart/cart.se
 import { CartVisibilityService } from '../../../../../services/cart-visibility.service';
 import { OrdersService } from '../../../../../services/orders.service';
 import { LoaderComponent } from '../../../../../shared/components/loader/loader.component';
+import {
+  OrderProgressModalComponent,
+  OrderProgressState,
+} from '../../../../../shared/components/order-progress-modal/order-progress-modal.component';
 import { PaymentDetails } from '../../../../admin/dashboard/components/payment/payment-create-modal/payment-create-modal.component';
 
 interface CartItem extends MenuItem {
@@ -33,7 +37,7 @@ interface CartItem extends MenuItem {
   selector: 'app-cart',
   templateUrl: './cart.component.html',
   standalone: true,
-  imports: [CommonModule, LoaderComponent, FormsModule, ButtonComponent, TranslateModule],
+  imports: [CommonModule, LoaderComponent, FormsModule, ButtonComponent, TranslateModule, OrderProgressModalComponent],
   providers: [DialogService],
 
   animations: [
@@ -118,6 +122,9 @@ export class CartComponent implements OnInit {
   totalPrice: number = 0;
   showCart: boolean = false;
   isLoading: boolean = false;
+  orderProgressState: OrderProgressState = 'idle';
+  lastOrderId?: string | number;
+  orderErrorMessage?: string;
   public themeMode = ['light', 'dark'];
   amountGivenByUser: number = 0;
   amountToChange!: number;
@@ -275,11 +282,12 @@ export class CartComponent implements OnInit {
     this.currentUser$.pipe(take(1)).subscribe((currentUser) => {
       if (!currentUser || typeof currentUser.id !== 'string') {
         this.toastr.error('User information is missing');
-        this.isLoading = false;
         return;
       }
 
       this.isLoading = true;
+      this.orderErrorMessage = undefined;
+      this.orderProgressState = 'placing';
 
       const orderData: OrderSubmission = {
         userEmail: currentUser.email,
@@ -294,9 +302,8 @@ export class CartComponent implements OnInit {
 
       this.ordersService.createOrder(orderData).subscribe({
         next: (order) => {
-          this.toastr.success('Order placed successfully!');
-          this.store.dispatch(clearCart());
-          this.cartVisibilityService.toggleCart();
+          this.lastOrderId = order.id;
+          this.orderProgressState = 'invoicing';
 
           this.invoiceService.downloadInvoice(order.id).subscribe({
             next: (pdfBlob) => {
@@ -306,23 +313,43 @@ export class CartComponent implements OnInit {
               a.download = `invoice_${order.id}.pdf`;
               a.click();
               URL.revokeObjectURL(fileURL);
-              this.toastr.success('Invoice downloaded successfully!');
+
+              this.orderProgressState = 'done';
               this.isLoading = false;
+
+              setTimeout(() => {
+                this.store.dispatch(clearCart());
+                if (this.showCart) this.cartVisibilityService.toggleCart();
+                this.orderProgressState = 'idle';
+                this.lastOrderId = undefined;
+              }, 1200);
             },
             error: (err) => {
               console.error('Invoice download failed', err);
-              this.toastr.error('Invoice download failed');
+              this.orderErrorMessage = 'Invoice download failed';
+              this.orderProgressState = 'error';
               this.isLoading = false;
             },
           });
         },
         error: (error) => {
           console.error('Failed to place an order', error);
-          this.toastr.error('Failed to place an order');
+          this.orderErrorMessage = 'Failed to place the order';
+          this.orderProgressState = 'error';
           this.isLoading = false;
         },
       });
     });
+  }
+
+  onOrderProgressRetry(): void {
+    this.orderProgressState = 'idle';
+    this.placeOrderAndPrintTicket();
+  }
+
+  onOrderProgressClose(): void {
+    this.orderProgressState = 'idle';
+    this.orderErrorMessage = undefined;
   }
 
   placeOrder(): void {
