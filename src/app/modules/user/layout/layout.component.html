@@ -1,4 +1,4 @@
-<div class="flex min-h-screen flex-col">
+<div class="flex min-h-screen flex-col bg-gray-50 dark:bg-background">
   <ng-container>
     <!-- Navigation -->
 <!--     <app-navbar></app-navbar>
@@ -7,10 +7,50 @@
     <div class="flex-grow overflow-hidden">
       <router-outlet></router-outlet>
     </div>
-    
+
     <!-- SHOPPING CART -->
-    <app-cart></app-cart>
+    <app-cart *ngIf="showCart"></app-cart>
     <!-- USER FOOTER -->
    <!--  <app-footer></app-footer> -->
   </ng-container>
+
+  <!-- Floating shortcuts button + popover -->
+  <div class="fixed bottom-4 left-4 z-50">
+    <!-- Popover -->
+    <div *ngIf="showShortcuts"
+      class="mb-2 w-64 rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl dark:border-gray-700 dark:bg-gray-900">
+      <div class="mb-3 flex items-center justify-between">
+        <h3 class="flex items-center gap-1.5 text-sm font-bold text-gray-900 dark:text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4 text-primary">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 11.25v1.5M15 11.25v1.5M9 4.5v.75A.75.75 0 0 1 8.25 6h-1.5A2.25 2.25 0 0 0 4.5 8.25v9a2.25 2.25 0 0 0 2.25 2.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-1.5a.75.75 0 0 1-.75-.75V4.5m-6 0c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125m-6 0H15" />
+          </svg>
+          Raccourcis
+        </h3>
+        <button (click)="toggleShortcuts()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="space-y-1.5 text-xs">
+        <div class="flex items-center justify-between"><span class="text-gray-500 dark:text-gray-400">Scanner</span><kbd class="rounded border border-gray-300 bg-gray-50 px-1.5 py-0.5 font-mono text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">F2</kbd></div>
+        <div class="flex items-center justify-between"><span class="text-gray-500 dark:text-gray-400">Recherche</span><kbd class="rounded border border-gray-300 bg-gray-50 px-1.5 py-0.5 font-mono text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">F3</kbd></div>
+        <div class="flex items-center justify-between"><span class="text-gray-500 dark:text-gray-400">Mode scan/catalogue</span><kbd class="rounded border border-gray-300 bg-gray-50 px-1.5 py-0.5 font-mono text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">F8</kbd></div>
+        <div class="flex items-center justify-between"><span class="text-gray-500 dark:text-gray-400">Paiement espèces</span><kbd class="rounded border border-gray-300 bg-gray-50 px-1.5 py-0.5 font-mono text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">F9</kbd></div>
+        <div class="flex items-center justify-between"><span class="text-gray-500 dark:text-gray-400">Valider commande</span><kbd class="rounded border border-gray-300 bg-gray-50 px-1.5 py-0.5 font-mono text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">F10</kbd></div>
+        <div class="flex items-center justify-between"><span class="text-gray-500 dark:text-gray-400">Vider panier</span><kbd class="rounded border border-gray-300 bg-gray-50 px-1.5 py-0.5 font-mono text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300">Ctrl+Suppr</kbd></div>
+      </div>
+    </div>
+
+    <!-- Floating button -->
+    <button (click)="toggleShortcuts()"
+      [class.bg-primary]="showShortcuts"
+      [class.text-white]="showShortcuts"
+      class="flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 bg-white shadow-lg transition hover:border-primary hover:bg-rose-50 hover:text-primary dark:border-gray-700 dark:bg-gray-800"
+      title="Raccourcis clavier">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+      </svg>
+    </button>
+  </div>
 </div>

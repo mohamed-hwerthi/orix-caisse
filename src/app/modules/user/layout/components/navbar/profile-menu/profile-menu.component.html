@@ -1,18 +1,18 @@
 <div class="relative">
-  <!-- Profile Button -->
-  <button (click)="toggleMenu()" class="relative flex rounded-full bg-card text-sm" type="button">
-    <span class="sr-only">Open user menu</span>
-    <img
-      *ngIf="user$ | async as user"
-      (clickOutside)="isOpen = false"
-      class="h-9 w-9 rounded-md"
-      [src]="user.imageUrl"
-      alt="User Profile" />
+  <!-- Theme Button (replaces user avatar) -->
+  <button (click)="toggleMenu()" type="button"
+    (clickOutside)="isOpen = false"
+    title="Changer la couleur du thème"
+    class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-600 transition hover:border-primary hover:bg-rose-50 hover:text-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-rose-900/20">
+    <span class="sr-only">Open theme menu</span>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 0 0 5.304 0l6.401-6.402M6.75 21A3.75 3.75 0 0 1 3 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 0 0 3.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008Z" />
+    </svg>
   </button>
   <!-- Dropdown -->
   <div
     [@openClose]="isOpen ? 'open' : 'closed'"
-    class="absolute right-0 z-20 mt-2 w-60 origin-top-right transform rounded-md bg-background py-4 shadow-custom ring-1 ring-transparent ring-opacity-5 transition focus:outline-none">
+    class="absolute left-0 z-20 mt-2 w-60 origin-top-left transform rounded-md border border-gray-200 bg-background py-4 shadow-xl ring-1 ring-transparent ring-opacity-5 transition focus:outline-none dark:border-gray-700">
     <!--     <div *ngIf="user$ | async as user" class="flext-row flex items-center px-4 pb-4" >
       <div class="w-10 shrink-0">
         <img
@@ -27,20 +27,8 @@
       </div>
     </div> -->
 
-    <div class="border-b border-dashed border-border"></div>
-
-    <ul class="my-2 mx-4 flex flex-col">
-      <li
-        *ngFor="let item of profileMenu"
-        (click)="onMenuItemClick(item)"
-        class="inline-flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-xs font-semibold text-muted-foreground hover:bg-card hover:text-primary">
-        <img src="  {{ item.icon }}" alt="" loading="lazy" class="h-5 w-5 text-muted-foreground/50" />
-        {{ item.key | translate }}
-      </li>
-    </ul>
-    <hr class="border-dashed border-border" />
     <div class="mx-4 my-2">
-      <span class="text-xs font-semibold text-foreground">Color</span>
+      <span class="text-xs font-semibold text-foreground">Couleur du thème</span>
       <div class="mt-2 grid grid-cols-2 gap-2">
         @for (item of themeColors; track $index) {
         <div
@@ -50,22 +38,8 @@
           class="focus-visible:ring-ring inline-flex h-8 cursor-pointer items-center justify-start whitespace-nowrap rounded-md border border-border bg-background px-3 text-xs font-medium text-muted-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50 hover:bg-card hover:text-foreground">
           <span
             [style.backgroundColor]="item.code"
-            class="mr-1 flex h-5 w-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-rose-500"></span>
+            class="mr-1 flex h-5 w-5 shrink-0 -translate-x-1 items-center justify-center rounded-full"></span>
           <p class="capitalize">{{ item.name }}</p>
-        </div>
-        }
-      </div>
-    </div>
-    <div class="mx-4 my-2">
-      <span class="text-xs font-semibold text-foreground">Mode</span>
-      <div class="mt-2 grid grid-cols-2 gap-2">
-        @for (item of themeMode; track $index) {
-        <div
-          :key="$index"
-          (click)="toggleThemeMode()"
-          [ngClass]="{ 'border-muted-foreground bg-card': item == themeService.theme().mode }"
-          class="focus-visible:ring-ring inline-flex h-8 cursor-pointer items-center justify-start whitespace-nowrap rounded-md border border-border bg-background px-3 text-xs font-medium text-muted-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50 hover:bg-card hover:text-foreground">
-          <p class="capitalize">{{ item }}</p>
         </div>
         }
       </div>

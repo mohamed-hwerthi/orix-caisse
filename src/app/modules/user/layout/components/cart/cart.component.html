@@ -1,172 +1,142 @@
-<div
-  [ngClass]="
-    (isDisplayingOnlyBarCoes$ | async)
-      ? [
-          'w-4/6',
-          'md:w-1/5',
-          'dark:bg-gray-800',
-          'fixed',
-          'inset-y-0',
-          'right-0',
-          'z-50',
-          'transform',
-          'overflow-y-auto',
-          'bg-white',
-          'shadow-lg'
-        ]
-      : [
-          'w-[80%]',
-          'absolute',
-          'top-1/2',
-          'left-1/2',
-          'transform',
-          '-translate-x-1/2',
-          '-translate-y-1/2',
-          'bg-white',          
-          'dark:bg-gray-800',            'shadow-lg',         
-          'dark:text-gray-100', 
-          'text-gray-900'       
-        ]
-  "
+<div class="fixed inset-y-0 right-0 z-50 flex w-4/6 flex-col border-l border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900 md:w-[320px]"
   (click)="$event.stopPropagation()"
-  (keydown)="handleKeyDown($event)"
->
+  (keydown)="handleKeyDown($event)">
 
-  <div class="p-4 text-gray-900 dark:text-gray-100">
-    <h2 class="text-2xl font-semibold">Panier</h2>
-
-    <!-- Scrollable area -->
-    <div *ngIf="cartItems.length > 0; else emptyCart" class="">
-      <ul class="  max-h-[400px] overflow-y-auto divide-y divide-gray-200 dark:divide-gray-700">
-        <li *ngFor="let item of cartItems" class="flex gap-4 py-4">
-          <img
-            [src]="getMenuItemImage(item)"
-            alt="{{ item.title }}"
-            class="h-20 w-20 flex-none rounded-full border border-gray-300 object-cover dark:border-gray-600" />
-          <div class="flex flex-1 flex-col">
-            <div class="flex justify-between">
-              <span class="mr-2 truncate font-semibold">
-                {{ item.title.length > 20 ? (item.title | slice: 0:20) + '...' : item.title }}
-              </span>
-              <button
-                (click)="removeItem(item.id)"
-                class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
-                Supprimer
-              </button>
-            </div>
-            <div class="mt-2 flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <!-- Moins -->
-                <button
-                  (click)="decreaseQuantity(item)"
-                  class="dark:text-primary-dark rounded-full border border-gray-300 bg-transparent text-primary dark:border-gray-600">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="h-6 w-6">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                  </svg>
-                </button>
-                <input
-                  type="number"
-                  [value]="item.quantityToSale"
-                  (change)="onQuantityChange($event, item)"
-                  min="1"
-                  class="w-14 rounded border border-gray-300 bg-gray-100 text-center text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
-                <!-- Plus -->
-                <button
-                  (click)="increaseQuantity(item)"
-                  class="dark:text-primary-dark rounded-full border border-gray-300 bg-transparent text-primary dark:border-gray-600">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="h-6 w-6">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                  </svg>
-                </button>
-              </div>
-              <span class="text-lg font-semibold">
-                {{ item.price * item.quantity }}
-                <span class="text-sm text-blue-500">&nbsp;{{ item.currency.symbol }}</span>
-              </span>
-            </div>
-          </div>
-        </li>
-      </ul>
-      <div class="mt-4 flex justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
-        <span class="text-lg font-semibold">Total :</span>
-        <span class="text-lg font-semibold">
-          {{ totalPrice }}
-          <span class="text-sm text-blue-500">&nbsp;{{ currentCurrency }}</span>
-        </span>
-      </div>
-  
-      <div class="mt-6 flex justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
-        <span class="text-lg font-semibold mr-6">Méthode de paiement :</span>
-      </div>
-  
-      <div class="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
-        @for (paymentMethod of allPaymentMethode; track $index) {
-          <td class="py-2 text-center">
-            <div class="inline-block">
-              <app-button (click)="openPaymentDialog()" size="large" impact="light" shape="rounded" size="medium">
-                {{ paymentMethod }}
-              </app-button>
-            </div>
-          </td>
-        }
-      </div>
- 
-
-    <button
-      (click)="placeOrderAndPrintTicket()"
-      class="mt-4 w-full rounded-lg py-2 text-white bg-primary hover:bg-primary-dark disabled:opacity-50"
-      [disabled]="isLoading"
-    >
-      <span *ngIf="!isLoading">Passer Ordre  et imprimer la ticket</span>
-      <span *ngIf="isLoading"><app-loader/></span>
-    </button>
+  <!-- Header -->
+  <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
+    <div class="flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5 text-primary">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+      </svg>
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white">Panier</h2>
     </div>
-  
-
-
-
-
+    <span *ngIf="cartItems.length > 0"
+      class="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-primary dark:bg-rose-900/30">
+      {{ cartItems.length }} {{ cartItems.length > 1 ? 'articles' : 'article' }}
+    </span>
   </div>
 
+  <!-- Body -->
+  <div *ngIf="cartItems.length > 0; else emptyCart" class="flex flex-1 flex-col overflow-hidden">
 
+    <!-- Items list -->
+    <ul class="flex-1 overflow-y-auto px-3 py-2">
+      <li *ngFor="let item of cartItems"
+        class="mb-2 flex gap-3 rounded-xl border border-gray-200 bg-white p-3 transition hover:border-rose-200 hover:shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
 
-    <ng-template #emptyCart>
-      <div class="flex flex-1 flex-col items-center justify-center">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-48 w-48 text-gray-400 dark:text-gray-600">
-          <path
-            fill="currentColor"
-            d="M20.756 5.345A1.003 1.003 0 0 0 20 5H6.181l-.195-1.164A1 1 0 0 0 5 3H2.75a1 1 0 1 0 0 2h1.403l1.86 11.164l.045.124l.054.151l.12.179l.095.112l.193.13l.112.065a.97.97 0 0 0 .367.075H18a1 1 0 1 0 0-2H7.847l-.166-1H19a1 1 0 0 0 .99-.858l1-7a1.002 1.002 0 0 0-.234-.797M18.847 7l-.285 2H15V7zM14 7v2h-3V7zm0 3v2h-3v-2zm-4-3v2H7l-.148.03L6.514 7zm-2.986 3H10v2H7.347zM15 12v-2h3.418l-.285 2z" />
-          <circle cx="8.5" cy="19.5" r="1.5" fill="currentColor" />
-          <circle cx="17.5" cy="19.5" r="1.5" fill="currentColor" />
-        </svg>
-        <p class="text-center text-gray-600 dark:text-gray-400">Votre panier est vide. Ajoutez des articles !</p>
+        <div class="relative h-16 w-16 flex-none overflow-hidden rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+          <img *ngIf="item.medias && item.medias.length > 0; else noImg"
+            [src]="getMenuItemImage(item)" [alt]="item.title"
+            class="h-full w-full object-cover" />
+          <ng-template #noImg>
+            <div class="flex h-full w-full items-center justify-center text-gray-300 dark:text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-8 w-8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5z" />
+              </svg>
+            </div>
+          </ng-template>
+        </div>
+
+        <div class="flex flex-1 flex-col justify-between min-w-0">
+          <div class="flex items-start justify-between gap-2">
+            <span class="truncate text-sm font-bold text-gray-900 dark:text-white" [title]="item.title">{{ item.title }}</span>
+            <button (click)="removeItem(item.id)"
+              class="flex h-6 w-6 flex-none items-center justify-center rounded-full text-gray-400 transition hover:bg-rose-50 hover:text-primary dark:hover:bg-rose-900/30">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="mt-1.5 flex items-center justify-between">
+            <div class="inline-flex items-center rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+              <button (click)="decreaseQuantity(item)"
+                class="flex h-7 w-7 items-center justify-center text-gray-600 transition hover:text-primary dark:text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-3.5 w-3.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+                </svg>
+              </button>
+              <input type="number" [value]="item.quantityToSale" (change)="onQuantityChange($event, item)" min="1"
+                class="h-7 w-9 border-0 bg-transparent p-0 text-center text-sm font-semibold text-gray-900 focus:ring-0 dark:text-white" />
+              <button (click)="increaseQuantity(item)"
+                class="flex h-7 w-7 items-center justify-center text-gray-600 transition hover:text-primary dark:text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-3.5 w-3.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+              </button>
+            </div>
+            <span class="text-sm font-bold text-primary">
+              {{ (item.price * item.quantity) | number: '1.2-2' }}
+              <span class="text-[10px] font-semibold text-gray-500 dark:text-gray-400">{{ item.currency.symbol }}</span>
+            </span>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <!-- Footer / Summary -->
+    <div class="border-t border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/30">
+      <div class="mb-3 flex items-baseline justify-between">
+        <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Total</span>
+        <div class="flex items-baseline gap-1">
+          <span class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ totalPrice | number: '1.2-2' }}</span>
+          <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">{{ currentCurrency }}</span>
+        </div>
       </div>
-    </ng-template>
 
-    <button
-      id="toggleViewButton"
-      #barcodeInput
-      (click)="toggleDisplayingOnlyBarCode()"
-      class="hover:bg-primary-dark mt-6 w-full rounded-lg bg-primary py-2 text-white disabled:opacity-50"
+      <button (click)="openPaymentDialog()"
+        class="mb-2 flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-900/50 dark:bg-emerald-900/20 dark:text-emerald-300 dark:hover:bg-emerald-900/40">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+        </svg>
+        Paiement en espèces
+        <span class="ml-1 rounded bg-emerald-200/60 px-1.5 py-0.5 text-[10px] font-mono dark:bg-emerald-800/60">F9</span>
+      </button>
+
+      <button (click)="placeOrderAndPrintTicket()"
+        class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 hover:shadow-md disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none"
+        [disabled]="isLoading">
+        <ng-container *ngIf="!isLoading">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5Zm-3 0h.008v.008H15V10.5Z" />
+          </svg>
+          Valider et imprimer
+          <span class="ml-1 rounded bg-white/20 px-1.5 py-0.5 text-[10px] font-mono">F10</span>
+        </ng-container>
+        <span *ngIf="isLoading"><app-loader /></span>
+      </button>
+    </div>
+  </div>
+
+  <ng-template #emptyCart>
+    <div class="flex flex-1 flex-col items-center justify-center px-6">
+      <div class="flex h-20 w-20 items-center justify-center rounded-full bg-rose-50 dark:bg-rose-950/30">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-10 w-10 text-primary">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+        </svg>
+      </div>
+      <p class="mt-4 text-center text-base font-semibold text-gray-700 dark:text-gray-200">Votre panier est vide</p>
+      <p class="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">Scannez un code ou cliquez un article</p>
+    </div>
+  </ng-template>
+
+  <!-- Toggle button -->
+  <div class="border-t border-gray-200 p-3 dark:border-gray-700">
+    <button #barcodeInput id="toggleViewButton" (click)="toggleDisplayingOnlyBarCode()"
+      class="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white py-2 text-sm font-semibold text-gray-700 transition hover:border-primary hover:bg-rose-50 hover:text-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-rose-900/20"
       [disabled]="isLoading">
-      {{ (isDisplayingOnlyBarCoes$ | async) ? 'Afficher en plein écran' : "Réduire l'affichage" }}
+      <ng-container *ngIf="(isDisplayingOnlyBarCoes$ | async); else scanLabel">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.5v15m3-15v15m3-15v15m3-15v15m3-15v15m3-15v15M3.75 4.5h16.5" />
+        </svg>
+        Mode scan rapide <span class="ml-1 text-[10px] opacity-60">F8</span>
+      </ng-container>
+      <ng-template #scanLabel>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+        </svg>
+        Mode catalogue <span class="ml-1 text-[10px] opacity-60">F8</span>
+      </ng-template>
     </button>
+  </div>
 </div>

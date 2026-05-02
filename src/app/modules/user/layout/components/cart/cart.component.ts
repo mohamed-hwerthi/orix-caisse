@@ -1,6 +1,6 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store, select } from '@ngrx/store';
@@ -51,7 +51,58 @@ interface CartItem extends MenuItem {
 })
 export class CartComponent implements OnInit {
   handleKeyDown($event: KeyboardEvent) {
-    throw new Error('Method not implemented.');
+    // local handler kept for backward compatibility
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleGlobalShortcuts(event: KeyboardEvent): void {
+    // Don't intercept when typing in form fields, except for explicit function keys
+    const target = event.target as HTMLElement;
+    const isTyping = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+    const isFunctionKey = /^F\d+$/.test(event.key) || event.key === 'Escape';
+
+    if (isTyping && !isFunctionKey && !(event.ctrlKey || event.metaKey)) return;
+
+    switch (event.key) {
+      case 'F8':
+        event.preventDefault();
+        this.toggleDisplayingOnlyBarCode();
+        break;
+      case 'F9':
+        event.preventDefault();
+        if (this.cartItems.length > 0) this.openPaymentDialog();
+        break;
+      case 'F10':
+        event.preventDefault();
+        if (this.cartItems.length > 0 && !this.isLoading) this.placeOrderAndPrintTicket();
+        break;
+      case 'Delete':
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          if (this.cartItems.length > 0 && confirm('Vider le panier ?')) {
+            this.store.dispatch(clearCart());
+          }
+        }
+        break;
+      case 'F2':
+        event.preventDefault();
+        this.focusInput('codeBarreScan') || this.focusInput('codeBarre');
+        break;
+      case 'F3':
+        event.preventDefault();
+        this.focusInput('title');
+        break;
+    }
+  }
+
+  private focusInput(id: string): boolean {
+    const el = document.getElementById(id) as HTMLInputElement | null;
+    if (el) {
+      el.focus();
+      el.select?.();
+      return true;
+    }
+    return false;
   }
   currentUser$: Observable<User | null>;
   currentCurrency!: string;
@@ -167,15 +218,13 @@ export class CartComponent implements OnInit {
   openPaymentDialog() {
     const formattedTotalPrice = this.totalPrice.toFixed(2);
     this.ref = this.dialogService.open(PaymentCreateModalComponent, {
-      width: '40vw',
-      height: '40vh',
+      width: '480px',
       modal: true,
+      showHeader: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
       },
-      styleClass: 'custom-red-dialog', // Correct way to pass CSS class
-
       data: {
         orderTotal: formattedTotalPrice,
       },

@@ -8,9 +8,28 @@
   </div>
 
   <div class="relative overflow-x-auto">
-    <div *ngIf="isLoading" class="mx-auto p-48">
-      <app-loader></app-loader>
-    </div>
+    <table *ngIf="isLoading" class="w-full table-auto">
+      <thead class="border-b-2 text-xs uppercase text-muted-foreground">
+        <tr>
+          <th class="py-3 text-left">Order ID</th>
+          <th class="py-3">Status</th>
+          <th class="py-3">Date</th>
+          <th class="py-3">Cost $</th>
+          <th class="py-3">Paid</th>
+          <th class="py-3">Buyer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of [1,2,3,4,5,6,7,8]" class="border-b border-gray-100 dark:border-gray-800">
+          <td class="py-3"><div class="h-4 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div></td>
+          <td class="py-3"><div class="mx-auto h-5 w-16 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700"></div></td>
+          <td class="py-3"><div class="mx-auto h-4 w-20 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div></td>
+          <td class="py-3"><div class="mx-auto h-4 w-12 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div></td>
+          <td class="py-3"><div class="mx-auto h-4 w-10 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div></td>
+          <td class="py-3"><div class="mx-auto h-4 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div></td>
+        </tr>
+      </tbody>
+    </table>
     <table *ngIf="!isLoading" class="w-full table-auto">
       <!--Table head-->
       <thead class="border-b-2 text-xs uppercase text-muted-foreground">

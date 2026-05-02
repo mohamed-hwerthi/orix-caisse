@@ -1,89 +1,211 @@
-<div class="bg-white dark:bg-background mr-[300px] pr-[80px]">
+<div class="bg-gray-50 dark:bg-background mr-[320px] min-h-screen">
 
-  <div class="filter-container flex items-center justify-end space-x-8">
-    <!-- Profil à droite avec marge à droite -->
+  <!-- ============================================================
+       CATALOGUE MODE (TRUE) — search + categories + products grid
+       ============================================================ -->
+  @if(isDisplayingOnlyBarCoes$ | async) {
 
-
-    <!-- Inputs côte à côte -->
-
-      <div class="flex flex-row items-center space-x-6">
-        <!-- Profile menu as first item -->
-        <div class="filter-item min-w-[280px]">
+    <!-- Header / Filters -->
+    <div class="sticky top-0 z-20 border-b border-gray-200 bg-white/90 px-6 py-4 backdrop-blur dark:border-gray-700 dark:bg-gray-900/90">
+      <div class="flex items-center gap-4">
+        <div class="shrink-0">
           <app-profile-menu></app-profile-menu>
         </div>
-        @if(isDisplayingOnlyBarCoes$ | async) {
-        <!-- First input -->
-        <div class="filter-item min-w-[280px]">
-          <label
-            for="title"
-            class="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
-          >
-            Titre <span class="text-red-500">*</span>
-          </label>
-          <input 
-            type="text"
-            id="title"
-            class="w-full px-4 py-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all duration-200"
-            [(ngModel)]="seachInput"
-            placeholder="Rechercher par nom de l'article"
-            (change)="searchByQuery()"
-            required
-          />
-        </div>
-      }
-      
-        <!-- Second input -->
-        <div class="filter-item min-w-[280px]">
-          <label
-            for="codeBarre"
-            class="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
-          >
-            Code à barre <span class="text-red-500">*</span>
-          </label>
-          <input
-            [(ngModel)]="barCode"
-            type="text"
-            id="codeBarre"
-            class="w-full px-4 py-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all duration-200"
-            placeholder="Rechercher par code-barres"
-            (change)="filterMenuItemsByBarCode()"
-            required
-          />
+
+        <button (click)="goToSalesHistory()"
+          class="shrink-0 flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition hover:border-primary hover:bg-rose-50 hover:text-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+          </svg>
+          Historique
+        </button>
+
+        <app-theme-toggle></app-theme-toggle>
+        <app-logout-button></app-logout-button>
+
+        <div class="flex flex-1 items-center gap-3">
+          <!-- Title search -->
+          <div class="relative flex-1">
+            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.34-4.34M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" />
+              </svg>
+            </span>
+            <input type="text" id="title"
+              class="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-rose-200 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+              [(ngModel)]="seachInput"
+              placeholder="Rechercher par nom de l'article"
+              (change)="searchByQuery()" />
+          </div>
+
+          <!-- Barcode search -->
+          <div class="relative flex-1">
+            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.5v15m3-15v15m3-15v15m3-15v15m3-15v15m3-15v15M3.75 4.5h16.5" />
+              </svg>
+            </span>
+            <input [(ngModel)]="barCode" type="text" id="codeBarre"
+              class="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-rose-200 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+              placeholder="Rechercher par code-barres"
+              (change)="filterMenuItemsByBarCode()" />
+          </div>
         </div>
       </div>
-  </div>
-
-  <!-- CATÉGORIES D'ALIMENTS À CHOISIR -->
-  @if(isDisplayingOnlyBarCoes$ | async) {
-    <app-food-category></app-food-category>
-  }
-
-  <!-- Indicateur de chargement -->
-  @if(isDisplayingOnlyBarCoes$ | async) {
-    <div *ngIf="isLoading" class="flex justify-center items-center p-48">
-      <app-loader />
     </div>
-  }
 
-  <!-- Affichage des articles du menu -->
-  @if(isDisplayingOnlyBarCoes$ | async) {
+    <app-food-category *ngIf="!isLoading"></app-food-category>
+    <app-food-category-skeleton *ngIf="isLoading"></app-food-category-skeleton>
+
     <div class="container mx-auto px-2 pb-24 pt-4 overflow-auto">
-      <div *ngIf="!isLoading && displayMenuItems.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Skeleton grid while loading -->
+      <div *ngIf="isLoading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <app-food-card-skeleton *ngFor="let s of skeletonItems"></app-food-card-skeleton>
+      </div>
+
+      <!-- Real cards -->
+      <div *ngIf="!isLoading && displayMenuItems.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         <app-food-card *ngFor="let item of displayMenuItems" [item]="item"></app-food-card>
       </div>
 
-      <!-- Message si aucun article n'est trouvé -->
-      <div *ngIf="!isLoading && displayMenuItems.length === 0" class="text-center">
-        <h2 class="text-lg font-semibold text-primary h-screen">Aucun article trouvé dans cette catégorie</h2>
+      <!-- Empty state -->
+      <div *ngIf="!isLoading && displayMenuItems.length === 0" class="flex flex-col items-center justify-center py-24 text-center">
+        <div class="flex h-20 w-20 items-center justify-center rounded-full bg-rose-50 dark:bg-rose-950/30">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-10 w-10 text-primary">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.34-4.34M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" />
+          </svg>
+        </div>
+        <h2 class="mt-4 text-lg font-semibold text-gray-700 dark:text-gray-200">Aucun article trouvé</h2>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Essayez une autre catégorie ou recherche</p>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================================
+       SCAN MODE (FALSE) — large barcode scanner only
+       ============================================================ -->
+  @if(!(isDisplayingOnlyBarCoes$ | async)) {
+    <div class="flex min-h-screen flex-col">
+      <!-- Top bar with profile -->
+      <div class="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
+        <div class="flex items-center gap-3">
+          <app-profile-menu></app-profile-menu>
+          <div>
+            <h1 class="text-lg font-bold text-gray-900 dark:text-white">Caisse</h1>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Mode scan rapide</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button (click)="goToSalesHistory()"
+            class="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition hover:border-primary hover:bg-rose-50 hover:text-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+            </svg>
+            Historique
+          </button>
+          <app-theme-toggle></app-theme-toggle>
+          <app-logout-button></app-logout-button>
+          <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+            <span class="mr-1.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
+            Prêt à scanner
+          </span>
+        </div>
+      </div>
+
+      <!-- Main scan area -->
+      <div class="flex flex-1 items-center justify-center px-6 py-12">
+        <div class="w-full max-w-2xl">
+
+          <!-- Scanner card -->
+          <div class="rounded-3xl border border-gray-200 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+            <!-- Icon -->
+            <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-rose-50 text-primary dark:bg-rose-900/30">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-10 w-10">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.5v15m3-15v15m3-15v15m3-15v15m3-15v15m3-15v15M3.75 4.5h16.5" />
+              </svg>
+            </div>
+
+            <h2 class="text-center text-2xl font-extrabold text-gray-900 dark:text-white">
+              Scanner un produit
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
+              Scannez le code-barres ou tapez-le manuellement ci-dessous
+            </p>
+
+            <!-- Big barcode input -->
+            <div class="relative mt-8">
+              <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-6 w-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.5v15m3-15v15m3-15v15m3-15v15m3-15v15m3-15v15M3.75 4.5h16.5" />
+                </svg>
+              </span>
+              <input [(ngModel)]="barCode" type="text" id="codeBarreScan" autofocus
+                class="w-full rounded-2xl border-2 border-gray-200 bg-gray-50 py-5 pl-14 pr-4 text-xl font-mono font-semibold tracking-wider text-gray-900 placeholder-gray-400 transition-all focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-rose-100 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 dark:focus:bg-gray-800"
+                placeholder="000000000000"
+                (change)="filterMenuItemsByBarCode()" />
+            </div>
+
+            <p class="mt-4 text-center text-xs text-gray-400 dark:text-gray-500">
+              💡 L'article sera automatiquement ajouté au panier
+            </p>
+          </div>
+
+          <!-- Last scanned article -->
+          <div *ngIf="lastScannedItem"
+            class="mt-6 flex items-center gap-4 rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900/50 dark:bg-emerald-900/20">
+            <div class="relative h-16 w-16 flex-none overflow-hidden rounded-xl bg-white dark:bg-gray-800">
+              <img *ngIf="lastScannedItem.medias && lastScannedItem.medias.length > 0; else noLastImg"
+                [src]="getLastScannedImage()" [alt]="lastScannedItem.title"
+                class="h-full w-full object-cover" />
+              <ng-template #noLastImg>
+                <div class="flex h-full w-full items-center justify-center text-gray-300 dark:text-gray-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-8 w-8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5z" />
+                  </svg>
+                </div>
+              </ng-template>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-1.5">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-4 w-4 text-emerald-600 dark:text-emerald-400">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                </svg>
+                <span class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">Ajouté au panier</span>
+              </div>
+              <h3 class="mt-1 truncate text-base font-bold text-gray-900 dark:text-white" [title]="lastScannedItem.title">
+                {{ lastScannedItem.title }}
+              </h3>
+              <p class="text-sm font-semibold text-primary">
+                {{ lastScannedItem.price | number: '1.2-2' }}
+                <span class="text-xs text-gray-500 dark:text-gray-400">{{ lastScannedItem.currency.symbol }}</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Quick stats -->
+          <div class="mt-6 grid grid-cols-2 gap-4">
+            <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+              <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Articles</p>
+              <p class="mt-1 text-2xl font-extrabold text-gray-900 dark:text-white">
+                {{ cartItemsCount }}
+              </p>
+            </div>
+            <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+              <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Total</p>
+              <p class="mt-1 text-2xl font-extrabold text-primary">
+                {{ cartTotal | number: '1.2-2' }}
+                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ currentCurrency }}</span>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   }
 </div>
 
-<!-- Modal de soumission d'avis -->
+<!-- Modals (only in catalogue mode) -->
 @if(isDisplayingOnlyBarCoes$ | async) {
   <app-submit-review-modal *ngIf="showSubmitReviewModal$ | async"></app-submit-review-modal>
 }
-
-<!-- Modal des avis utilisateurs -->
 <app-user-reviews-modal *ngIf="showUserReviewsModal$ | async"></app-user-reviews-modal>

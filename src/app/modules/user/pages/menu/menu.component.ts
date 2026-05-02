@@ -19,10 +19,15 @@ import {
 import { MenuItemsService } from '../../../../services/menuItems.service';
 import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
 import { FoodCardComponent } from './food-card/food-card.component';
+import { FoodCardSkeletonComponent } from './food-card/food-card-skeleton.component';
 import { FoodCategoryComponent } from './food-category/food-category.component';
+import { FoodCategorySkeletonComponent } from './food-category/food-category-skeleton.component';
 import { SubmitUserReviewModal } from './submit-review-modal/submit-review-modal.component';
 import { UserReviewsModalComponent } from './user-reviews-modal/user-reviews-modal.component';
 import { ProfileMenuComponent } from '../../layout/components/navbar/profile-menu/profile-menu.component';
+import { ThemeToggleComponent } from '../../../../shared/components/theme-toggle/theme-toggle.component';
+import { LogoutButtonComponent } from '../../../../shared/components/logout-button/logout-button.component';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-menu',
@@ -30,11 +35,15 @@ import { ProfileMenuComponent } from '../../layout/components/navbar/profile-men
   imports: [
     CommonModule,
     FoodCardComponent,
+    FoodCardSkeletonComponent,
     FoodCategoryComponent,
+    FoodCategorySkeletonComponent,
     LoaderComponent,
     SubmitUserReviewModal,
     UserReviewsModalComponent,
     ProfileMenuComponent,
+    ThemeToggleComponent,
+    LogoutButtonComponent,
     FormsModule,
   ],
   templateUrl: './menu.component.html',
@@ -54,8 +63,14 @@ export class MenuComponent implements OnInit, OnDestroy {
 
   private queryParamsSubscription!: Subscription;
   private reviewNotificationSubscription!: Subscription;
+  private cartSubscription?: Subscription;
   barCode?: string;
   seachInput: string = '';
+  cartItemsCount = 0;
+  cartTotal = 0;
+  currentCurrency = '';
+  lastScannedItem?: MenuItem;
+  skeletonItems = Array(10).fill(0);
   public profileMenu = [
     {
       key: 'PROFILE_MENU.LOGOUT',
@@ -115,6 +130,13 @@ export class MenuComponent implements OnInit, OnDestroy {
     // Listen for review submission notifications
     this.reviewNotificationSubscription = this.menuItemsService.reviewSubmitted$.subscribe(() => {
       this.fetchMenuItems(true);
+    });
+
+    // Track cart for scan-mode stats
+    this.cartSubscription = this.store.select(selectCartItems).subscribe((items: MenuItem[]) => {
+      this.cartItemsCount = items.length;
+      this.cartTotal = items.reduce((sum, it: any) => sum + (it.price * (it.quantity || 1)), 0);
+      this.currentCurrency = items[0]?.currency?.symbol || '';
     });
   }
 
@@ -181,6 +203,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         next: (res) => {
           this.addToCart(res);
           this.displayMenuItems = [res];
+          this.lastScannedItem = res;
           this.barCode = undefined;
         },
         error: (err: { error: string; status: string }) => {
@@ -215,6 +238,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     // Unsubscribe to prevent memory leaks
     this.queryParamsSubscription?.unsubscribe();
     this.reviewNotificationSubscription?.unsubscribe();
+    this.cartSubscription?.unsubscribe();
   }
   addToCart(item: MenuItem): void {
     this.store
@@ -228,20 +252,26 @@ export class MenuComponent implements OnInit, OnDestroy {
               positionClass: 'custom-toast-top-right',
             });
           } else {
-            // 🛒 Appliquer une réduction de 20% sur le prix
-            const discountedItem: MenuItem = {
-              ...item,
-              price: item.price * 0.8, // 20% de réduction
-            };
             this.toastr.success('Item added to cart!', '', {
               positionClass: 'custom-toast-top-right',
             });
-            this.store.dispatch(addItem({ item: discountedItem }));
+            this.store.dispatch(addItem({ item }));
           }
         }),
       )
       .subscribe();
   }
+  goToSalesHistory(): void {
+    this.router.navigate(['/sales-history']);
+  }
+
+  getLastScannedImage(): string {
+    if (this.lastScannedItem?.medias?.length) {
+      return environment.apiStaticUrl + this.lastScannedItem.medias[0].url;
+    }
+    return '';
+  }
+
   public onMenuItemClick(item: any): void {
     if (item.key === 'PROFILE_MENU.LOGOUT') {
       this.logout();

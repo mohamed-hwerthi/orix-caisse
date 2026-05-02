@@ -1,78 +1,50 @@
-<div class="relative flex items-center justify-center" @fadeInOut>
-  <div
-    class="z-10 mx-auto w-full max-w-md overflow-hidden rounded-3xl border-2 border-primary bg-white shadow-md shadow-primary dark:bg-transparent">
-    <div class="group mx-auto max-w-md cursor-pointer transition duration-500 hover:scale-105">
-      <div class="aspect-w-16 aspect-h-9 relative bg-gray-200">
-        <!-- Toujours afficher l'image compressée au départ -->
-        <img [src]="getMenuItemImage()" class="absolute top-0 left-0 h-full w-full object-cover" loading="lazy" />
+<div @fadeInOut
+  (click)="addToCart(item)"
+  role="button"
+  tabindex="0"
+  (keydown.enter)="addToCart(item)"
+  class="group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-rose-300 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800">
+
+  <!-- Image / Placeholder -->
+  <div class="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+    <ng-container *ngIf="item.medias && item.medias.length > 0; else noImage">
+      <img
+        [src]="getMenuItemImage()"
+        [alt]="item.title"
+        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+        loading="lazy" />
+    </ng-container>
+    <ng-template #noImage>
+      <div class="flex h-full w-full items-center justify-center text-gray-300 dark:text-gray-500">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-12 w-12">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+        </svg>
       </div>
+    </ng-template>
 
-      <div class="flex min-h-[100px] flex-col p-4 sm:p-6">
-        <div class="flex flex-row  justify-content-between">
-          <p class="mb-1 text-[22px] font-bold leading-7 text-gray-700 dark:text-white">{{ item.title }}</p>
-          <p  
-            class="ml-16 font-semibold"
-            [ngClass]="{
-              'text-green-600': item.quantity > 0,
-              'text-red-600': item.quantity === 0
-            }">
-            {{ item.quantity > 0 ? 'In Stock' : 'Out of Stock' }}
-          </p>
-        </div>
-
-        <!-- Stock status display -->
-
-        <div class="flex flex-row space-x-4">
-          <div class="flex items-center space-x-1">
-            <span class="text-[17px] font-bold text-red-500 line-through">
-              {{ item.price }}
-            </span>
-            <span class="text-sm text-blue-500">
-              {{ item.currency.symbol }}
-            </span>
-          </div>
-          <div class="flex items-center space-x-1">
-            <span class="text-[17px] font-bold text-[#0FB478]">
-              {{ item.price * 0.8 | number: '1.2-2' }}
-            </span>
-            <span class="text-sm text-blue-500">
-              {{ item.currency.symbol }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Description de l'article (commentée pour l’instant) -->
-        <!--
-        <div>
-          <p class="font-[15px] text-[#7C7C80] transition ease-in-out dark:text-white">
-            {{
-              showFullDescription || item.description.length <= 50
-                ? item.description
-                : (item.description | slice: 0:60) + '...'
-            }}
-          </p>
-          <button *ngIf="item.description.length > 50" (click)="toggleDescription()" class="mt-2 text-primary">
-            {{ showFullDescription ? 'Afficher moins' : 'Lire plus' }}
-          </button>
-        </div>
-        -->
-
-        <button
-           [disabled]="item.quantity === 0"
-          (click)="addToCart(item)"
-          class="mt-4 w-full cursor-pointer rounded-[14px] bg-primary px-4 py-3 text-center font-medium capitalize tracking-wide text-white transition-colors duration-300 focus:outline-none focus:ring focus:ring-opacity-80 hover:opacity-75">
-          Ajouter au panier
-        </button>
-
-        <!-- Bouton de soumission d'avis (commenté pour l’instant) -->
-        <!--
-        <button
-          (click)="openReviewModal(item.id)"
-          class="mt-4 w-full cursor-pointer rounded-[14px] bg-gradient-to-r from-purple-500 to-indigo-600 px-4 py-3 text-center font-medium capitalize tracking-wide text-white transition-colors duration-300 focus:outline-none focus:ring focus:ring-opacity-80 hover:opacity-75">
-          Soumettre un avis
-        </button>
-        -->
+    <!-- Hover overlay with + icon -->
+    <div class="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+      <div class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg ring-4 ring-white/30">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-7 w-7">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
       </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="flex flex-1 flex-col p-3">
+    <h3 class="truncate text-sm font-bold text-gray-900 dark:text-white" [title]="item.title">
+      {{ item.title }}
+    </h3>
+
+    <div class="mt-1.5 flex items-baseline gap-1">
+      <span class="text-xl font-extrabold text-primary">
+        {{ item.price | number: '1.2-2' }}
+      </span>
+      <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+        {{ item.currency.symbol }}
+      </span>
     </div>
   </div>
 </div>

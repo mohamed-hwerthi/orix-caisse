@@ -207,9 +207,33 @@ input[type="radio"]:checked + .toggle-bg {
   border-color: #22c55e; /* Tailwind green-500 */
 }
 
+/* Position toasts at the bottom center, away from the cart sidebar (right) and shortcuts button (bottom-left) */
 .custom-toast-top-right {
-  top: 64px;
-  right: 12px;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  top: auto;
+  right: auto;
+  /* Constrain so the cart (320px right) and shortcuts button (left ~80px) leave room */
+  max-width: calc(100vw - 460px);
+  pointer-events: none;
+}
+
+.custom-toast-top-right > * {
+  pointer-events: auto;
+}
+
+/* PrimeNG dynamic dialog: dark mode support for payment modal */
+.dark p-dynamicdialog .p-dialog,
+.dark p-dynamicdialog .p-dialog-content {
+  background-color: rgb(17 24 39) !important; /* gray-900 */
+  color: rgb(243 244 246); /* gray-100 */
+}
+
+p-dynamicdialog .p-dialog {
+  border-radius: 1rem;
+  overflow: hidden;
 }
 
 /** Plugins **/
