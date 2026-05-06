@@ -7,13 +7,14 @@ import { OverviewComponent } from "../../admin/dashboard/pages/overview/overview
 import { CartComponent } from './components/cart/cart.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { CashSessionBarComponent } from '../../../shared/components/cash-session-bar/cash-session-bar.component';
 
 
 @Component({
   selector: 'app-layout',
   templateUrl: './layout.component.html',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, NavbarComponent, FooterComponent, CartComponent, OverviewComponent],
+  imports: [RouterOutlet, CommonModule, NavbarComponent, FooterComponent, CartComponent, OverviewComponent, CashSessionBarComponent],
 })
 export class LayoutComponent {
   showShortcuts = false;

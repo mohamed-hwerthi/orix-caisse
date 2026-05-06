@@ -65,7 +65,7 @@
     "PROFILE": "Profile",
     "ORDERS": "Orders",
     "CONTACT": "Contact",
-    "COPYRIGHT": "© 2024 <a routerLink='/' class='hover:underline'>Food Squad™</a>. All Rights Reserved."
+    "COPYRIGHT": "© 2024 <a routerLink='/' class='hover:underline'>Orix Bio™</a>. All Rights Reserved."
   },
   "PROFILE_MENU": {
     "PROFILE": "My Profile",
@@ -101,32 +101,32 @@
     }
   },
   "ABOUT_US": {
-    "TITLE": "About Food Squad: A Student Project",
-    "DESCRIPTION": "Welcome to Food Squad, an innovative food ordering platform developed as a student project. I, George, am the sole creator and developer behind Food Squad, driven by a passion for technology and a love for good food. Food Squad isn't just an app; it's a culmination of my dedication to learning and exploring new avenues in the digital world.",
+    "TITLE": "About Orix Bio: A Student Project",
+    "DESCRIPTION": "Welcome to Orix Bio, an innovative food ordering platform developed as a student project. I, George, am the sole creator and developer behind Orix Bio, driven by a passion for technology and a love for good food. Orix Bio isn't just an app; it's a culmination of my dedication to learning and exploring new avenues in the digital world.",
     "MISSION": {
       "TITLE": "Our Mission",
-      "DESCRIPTION": "Food Squad was born out of a desire to explore the intersection of technology and gastronomy, without the aim of generating profit. My mission with Food Squad is simple: to create a convenient and enjoyable food ordering experience for users, while also gaining valuable skills and knowledge as a student."
+      "DESCRIPTION": "Orix Bio was born out of a desire to explore the intersection of technology and gastronomy, without the aim of generating profit. My mission with Orix Bio is simple: to create a convenient and enjoyable food ordering experience for users, while also gaining valuable skills and knowledge as a student."
     },
     "VISION": {
       "TITLE": "Our Vision",
-      "DESCRIPTION": "While many food apps focus on profit and scalability, Food Squad's vision is unique. I envision Food Squad as a platform that prioritizes learning and experimentation, providing users with a glimpse into the capabilities of student-driven projects. Through Food Squad, I aim to showcase the creativity and innovation that students can bring to the table."
+      "DESCRIPTION": "While many food apps focus on profit and scalability, Orix Bio's vision is unique. I envision Orix Bio as a platform that prioritizes learning and experimentation, providing users with a glimpse into the capabilities of student-driven projects. Through Orix Bio, I aim to showcase the creativity and innovation that students can bring to the table."
     },
     "UNIQUENESS": {
-      "TITLE": "What Sets Food Squad Apart",
+      "TITLE": "What Sets Orix Bio Apart",
       "FEATURES": [
-        "Educational Endeavor: Food Squad serves as a learning platform for me as a student, allowing me to gain hands-on experience in app development, user interface design, and project management.",
-        "Community Engagement: While Food Squad may not aim for profit, it fosters community engagement and collaboration. I welcome feedback and suggestions from users, fellow students, and anyone interested in contributing to the project's growth.",
-        "Transparent Approach: Food Squad operates with transparency and honesty. As a student project, I'm upfront about my goals and limitations, providing users with a unique insight into the development process.",
-        "Continuous Improvement: As I continue to develop Food Squad, I'm committed to continuous improvement. Every update and enhancement is driven by a desire to learn and refine my skills as a developer."
+        "Educational Endeavor: Orix Bio serves as a learning platform for me as a student, allowing me to gain hands-on experience in app development, user interface design, and project management.",
+        "Community Engagement: While Orix Bio may not aim for profit, it fosters community engagement and collaboration. I welcome feedback and suggestions from users, fellow students, and anyone interested in contributing to the project's growth.",
+        "Transparent Approach: Orix Bio operates with transparency and honesty. As a student project, I'm upfront about my goals and limitations, providing users with a unique insight into the development process.",
+        "Continuous Improvement: As I continue to develop Orix Bio, I'm committed to continuous improvement. Every update and enhancement is driven by a desire to learn and refine my skills as a developer."
       ]
     },
     "GET_INVOLVED": {
       "TITLE": "Get Involved",
-      "DESCRIPTION": "Interested in supporting Food Squad? There are several ways to get involved:",
+      "DESCRIPTION": "Interested in supporting Orix Bio? There are several ways to get involved:",
       "OPPORTUNITIES": [
-        "Provide Feedback: Your feedback is invaluable in shaping the future of Food Squad. Whether you have suggestions for improvement or feature requests, I'd love to hear from you.",
-        "Spread the Word: Help spread the word about Food Squad within your community and among fellow students. The more users we have, the more opportunities there are for learning and collaboration.",
-        "Contribute: Are you a fellow student with a passion for technology? Consider contributing to Food Squad! Whether you're a developer, designer, or marketing enthusiast, there's a place for you on the Food Squad team."
+        "Provide Feedback: Your feedback is invaluable in shaping the future of Orix Bio. Whether you have suggestions for improvement or feature requests, I'd love to hear from you.",
+        "Spread the Word: Help spread the word about Orix Bio within your community and among fellow students. The more users we have, the more opportunities there are for learning and collaboration.",
+        "Contribute: Are you a fellow student with a passion for technology? Consider contributing to Orix Bio! Whether you're a developer, designer, or marketing enthusiast, there's a place for you on the Orix Bio team."
       ]
     }
   },

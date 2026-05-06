@@ -10,7 +10,9 @@ import { addItem } from 'src/app/core/state/shopping-cart/cart.actions';
 import { selectCartItems } from 'src/app/core/state/shopping-cart/cart.selectors';
 import { CustomToasterService } from 'src/app/services/custom-toaster.service';
 import { SharedService } from 'src/app/services/shared.service';
-import { MenuItem, PaginatedResponseDTO } from '../../../../core/models';
+import { MenuItem, PaginatedResponseDTO, Promotion } from '../../../../core/models';
+import { PromotionService } from '../../../../services/promotion.service';
+import { PromotionEngineService } from '../../../../services/promotion-engine.service';
 import * as AuthActions from '../../../../core/state/auth/auth.actions';
 import {
   selectIsCreateReviewUserModalOpen,
@@ -71,6 +73,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   currentCurrency = '';
   lastScannedItem?: MenuItem;
   skeletonItems = Array(10).fill(0);
+  activePromotions: Promotion[] = [];
   public profileMenu = [
     {
       key: 'PROFILE_MENU.LOGOUT',
@@ -88,6 +91,8 @@ export class MenuComponent implements OnInit, OnDestroy {
     private readonly toastr: ToastrService,
     private readonly sharedService: SharedService,
     private readonly router: Router,
+    private readonly promotionService: PromotionService,
+    public readonly promotionEngine: PromotionEngineService,
   ) {
     this.isDisplayingOnlyBarCoes$ = this.sharedService.getIsBarcodeOnlyMode();
   }
@@ -95,6 +100,14 @@ export class MenuComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.showSubmitReviewModal$ = this.store.select(selectIsCreateReviewUserModalOpen);
     this.showUserReviewsModal$ = this.store.select(selectIsUserReviewsModalOpen);
+
+    // Load active promotions for the menu engine
+    this.promotionService.getActive().subscribe({
+      next: (promos) => {
+        this.activePromotions = promos.filter((p) => !p.promoCode);
+        this.promotionEngine.setActivePromotions(promos);
+      },
+    });
 
     // Listen for any changes in the URL query parameters
     this.queryParamsSubscription = this.route.queryParams
@@ -263,6 +276,10 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
   goToSalesHistory(): void {
     this.router.navigate(['/sales-history']);
+  }
+
+  goToAdmin(): void {
+    this.router.navigate(['/admin/dashboard']);
   }
 
   getLastScannedImage(): string {

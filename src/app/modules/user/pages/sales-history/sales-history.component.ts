@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { forkJoin } from 'rxjs';
 
 import { Order } from '../../../../core/models/order.model';
-import { MenuItem } from '../../../../core/models';
+import { MenuItem, SalesStats, TopProduct } from '../../../../core/models';
 import { MenuItemsService } from '../../../../services/menuItems.service';
 import { OrdersService } from '../../../../services/orders.service';
+import { SalesStatsService } from '../../../../services/sales-stats.service';
 import { ChartOptions } from '../../../../shared/models/chart-options';
 
 interface ProductStat {
@@ -20,7 +22,7 @@ interface ProductStat {
 @Component({
   selector: 'app-sales-history',
   standalone: true,
-  imports: [CommonModule, NgApexchartsModule],
+  imports: [CommonModule, FormsModule, NgApexchartsModule],
   templateUrl: './sales-history.component.html',
 })
 export class SalesHistoryComponent implements OnInit {
@@ -38,6 +40,14 @@ export class SalesHistoryComponent implements OnInit {
   topProducts: ProductStat[] = [];
   recentOrders: Order[] = [];
 
+  // Range stats (server-side)
+  rangeFrom: string = this.toIso(new Date(new Date().setDate(new Date().getDate() - 6)));
+  rangeTo: string = this.toIso(new Date());
+  rangeStats: SalesStats | null = null;
+  rangeTopProducts: TopProduct[] = [];
+  rangeLoading = false;
+  rangeChart: Partial<ChartOptions> = {};
+
   // Charts
   revenueByHourChart: Partial<ChartOptions> = {};
   weeklySalesChart: Partial<ChartOptions> = {};
@@ -51,11 +61,101 @@ export class SalesHistoryComponent implements OnInit {
   constructor(
     private readonly ordersService: OrdersService,
     private readonly menuItemsService: MenuItemsService,
+    private readonly salesStatsService: SalesStatsService,
     private readonly router: Router,
   ) {}
 
   ngOnInit(): void {
     this.loadData();
+    this.loadRangeStats();
+  }
+
+  private toIso(d: Date): string {
+    return d.toISOString().slice(0, 10);
+  }
+
+  loadRangeStats(): void {
+    this.rangeLoading = true;
+    forkJoin({
+      stats: this.salesStatsService.getStats(this.rangeFrom, this.rangeTo),
+      top: this.salesStatsService.getTopProducts(this.rangeFrom, this.rangeTo, 10),
+    }).subscribe({
+      next: ({ stats, top }) => {
+        this.rangeStats = stats;
+        this.rangeTopProducts = top;
+        this.buildRangeChart();
+        this.rangeLoading = false;
+      },
+      error: () => {
+        this.rangeLoading = false;
+      },
+    });
+  }
+
+  applyPreset(preset: 'today' | '7d' | '30d' | 'month'): void {
+    const today = new Date();
+    if (preset === 'today') {
+      this.rangeFrom = this.toIso(today);
+      this.rangeTo = this.toIso(today);
+    } else if (preset === '7d') {
+      const from = new Date(today);
+      from.setDate(from.getDate() - 6);
+      this.rangeFrom = this.toIso(from);
+      this.rangeTo = this.toIso(today);
+    } else if (preset === '30d') {
+      const from = new Date(today);
+      from.setDate(from.getDate() - 29);
+      this.rangeFrom = this.toIso(from);
+      this.rangeTo = this.toIso(today);
+    } else if (preset === 'month') {
+      const from = new Date(today.getFullYear(), today.getMonth(), 1);
+      this.rangeFrom = this.toIso(from);
+      this.rangeTo = this.toIso(today);
+    }
+    this.loadRangeStats();
+  }
+
+  exportCsv(): void {
+    this.salesStatsService.downloadCsv(this.rangeFrom, this.rangeTo).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ventes_${this.rangeFrom}_${this.rangeTo}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+    });
+  }
+
+  private buildRangeChart(): void {
+    const days = this.rangeStats?.daily ?? [];
+    this.rangeChart = {
+      series: [
+        { name: 'Revenus (TND)', data: days.map((d) => Number(d.revenue)) } as any,
+        { name: 'Commandes', data: days.map((d) => d.ordersCount) } as any,
+      ],
+      chart: { type: 'bar', height: 280, toolbar: { show: false }, fontFamily: 'inherit' },
+      colors: ['#3b82f6', '#10b981'],
+      plotOptions: { bar: { horizontal: false, columnWidth: '50%', borderRadius: 6 } },
+      dataLabels: { enabled: false },
+      stroke: { show: true, width: 2, colors: ['transparent'] },
+      xaxis: {
+        categories: days.map((d) => {
+          const dt = new Date(d.day);
+          return dt.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+        }),
+        labels: { style: { colors: '#9aa0ac', fontSize: '11px' } },
+      },
+      yaxis: [
+        { title: { text: 'TND', style: { color: '#9aa0ac' } }, labels: { style: { colors: '#9aa0ac' } } },
+        { opposite: true, title: { text: 'Cmd', style: { color: '#9aa0ac' } }, labels: { style: { colors: '#9aa0ac' } } },
+      ],
+      grid: { borderColor: '#e5e7eb', strokeDashArray: 4 },
+      legend: { position: 'top', horizontalAlign: 'right', labels: { colors: '#6b7280' } },
+      fill: { opacity: 1 },
+      tooltip: {},
+    };
   }
 
   loadData(): void {

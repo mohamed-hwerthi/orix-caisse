@@ -22,6 +22,8 @@ import { clearCart, removeItem } from '../../../../../core/state/shopping-cart/c
 import { selectCartItems } from '../../../../../core/state/shopping-cart/cart.selectors';
 import { CartVisibilityService } from '../../../../../services/cart-visibility.service';
 import { OrdersService } from '../../../../../services/orders.service';
+import { MenuItemsService } from '../../../../../services/menuItems.service';
+import { PromotionEngineService } from '../../../../../services/promotion-engine.service';
 import { LoaderComponent } from '../../../../../shared/components/loader/loader.component';
 import {
   OrderProgressModalComponent,
@@ -120,6 +122,8 @@ export class CartComponent implements OnInit {
 
   cartItems: CartItem[] = [];
   totalPrice: number = 0;
+  originalTotal: number = 0;
+  totalDiscount: number = 0;
   showCart: boolean = false;
   isLoading: boolean = false;
   orderProgressState: OrderProgressState = 'idle';
@@ -143,6 +147,8 @@ export class CartComponent implements OnInit {
     public dialogService: DialogService,
     public sharedService: SharedService,
     private readonly invoiceService: InvoiceService,
+    private readonly promotionEngine: PromotionEngineService,
+    private readonly menuItemsService: MenuItemsService,
   ) {
     this.isDisplayingOnlyBarCoes$! = sharedService.getIsBarcodeOnlyMode();
 
@@ -204,8 +210,25 @@ export class CartComponent implements OnInit {
   }
 
   calculateTotalPrice(): void {
-    this.totalPrice = this.cartItems.reduce((total, item) => total + item.price * item.quantityToSale, 0);
+    let original = 0;
+    let total = 0;
+    for (const item of this.cartItems) {
+      const ap = this.promotionEngine.computePrice(item);
+      original += item.price * item.quantityToSale;
+      total += ap.unitPrice * item.quantityToSale;
+    }
+    this.originalTotal = Math.round(original * 100) / 100;
+    this.totalPrice = Math.round(total * 100) / 100;
+    this.totalDiscount = Math.round((original - total) * 100) / 100;
     this.amountToChange = this.totalPrice;
+  }
+
+  getAppliedPrice(item: CartItem): number {
+    return this.promotionEngine.computePrice(item).unitPrice;
+  }
+
+  hasPromoOnItem(item: CartItem): boolean {
+    return this.promotionEngine.computePrice(item).promotion != null;
   }
 
   onQuantityChange(event: Event, cartItem: CartItem): void {
@@ -298,13 +321,31 @@ export class CartComponent implements OnInit {
         createdOn: new Date().toISOString(),
         paid: false,
         status: 'PENDING',
+        paymentMethod: 'CASH',
       };
+
+      // Snapshot sold items for low-stock alert after backend updates
+      const soldItems = this.cartItems.map((it) => ({ id: it.id, title: it.title }));
 
       this.ordersService.createOrder(orderData).subscribe({
         next: (order) => {
           this.lastOrderId = order.id;
-          this.orderProgressState = 'invoicing';
 
+          // Order placed → success immediately. Invoice downloads in BACKGROUND (don't block cashier).
+          this.orderProgressState = 'done';
+          this.isLoading = false;
+          this.store.dispatch(clearCart());
+          if (this.showCart) this.cartVisibilityService.toggleCart();
+
+          // Check stock state after sale and toast if any sold item is now low/empty
+          this.checkLowStockAfterSale(soldItems);
+
+          setTimeout(() => {
+            this.orderProgressState = 'idle';
+            this.lastOrderId = undefined;
+          }, 800);
+
+          // Fire-and-forget: triggers download when ready (a few seconds later)
           this.invoiceService.downloadInvoice(order.id).subscribe({
             next: (pdfBlob) => {
               const fileURL = URL.createObjectURL(pdfBlob);
@@ -313,22 +354,10 @@ export class CartComponent implements OnInit {
               a.download = `invoice_${order.id}.pdf`;
               a.click();
               URL.revokeObjectURL(fileURL);
-
-              this.orderProgressState = 'done';
-              this.isLoading = false;
-
-              setTimeout(() => {
-                this.store.dispatch(clearCart());
-                if (this.showCart) this.cartVisibilityService.toggleCart();
-                this.orderProgressState = 'idle';
-                this.lastOrderId = undefined;
-              }, 1200);
             },
             error: (err) => {
               console.error('Invoice download failed', err);
-              this.orderErrorMessage = 'Invoice download failed';
-              this.orderProgressState = 'error';
-              this.isLoading = false;
+              this.toastr.warning('Facture indisponible (commande OK)');
             },
           });
         },
@@ -371,13 +400,17 @@ export class CartComponent implements OnInit {
         createdOn: new Date().toISOString(),
         paid: false,
         status: 'PENDING',
+        paymentMethod: 'CASH',
       };
+
+      const soldItems = this.cartItems.map((it) => ({ id: it.id, title: it.title }));
 
       this.ordersService.createOrder(orderData).subscribe({
         next: (order) => {
           this.toastr.success('Order placed successfully!');
           this.store.dispatch(clearCart());
           this.cartVisibilityService.toggleCart();
+          this.checkLowStockAfterSale(soldItems);
         },
         error: (error) => {
           console.error('Failed to place an order', error);
@@ -385,6 +418,30 @@ export class CartComponent implements OnInit {
           this.isLoading = false;
         },
       });
+    });
+  }
+
+  /** Fetches fresh stock summary and toasts if any sold item just hit rupture or low-stock. */
+  private checkLowStockAfterSale(sold: { id: number; title: string }[]): void {
+    if (sold.length === 0) return;
+    this.menuItemsService.getStockSummary().subscribe({
+      next: (rows) => {
+        const byId = new Map(rows.map((r) => [r.id, r]));
+        const ruptures: string[] = [];
+        const lows: string[] = [];
+        for (const it of sold) {
+          const s = byId.get(it.id);
+          if (!s) continue;
+          if (s.stockQuantity <= 0) ruptures.push(it.title);
+          else if (s.lowStock) lows.push(it.title);
+        }
+        if (ruptures.length > 0) {
+          this.toastr.error(`🚨 RUPTURE : ${ruptures.join(', ')}`, '', { timeOut: 6000 });
+        }
+        if (lows.length > 0) {
+          this.toastr.warning(`⚠️ Stock bas : ${lows.join(', ')}`, '', { timeOut: 6000 });
+        }
+      },
     });
   }
 }

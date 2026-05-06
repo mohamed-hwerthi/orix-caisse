@@ -8,6 +8,13 @@ import { environment } from '../../environments/environment';
 import { MenuItem, PaginatedResponseDTO } from '../core/models';
 import { BaseService } from './base.service';
 
+export interface StockSummaryEntry {
+  id: number;
+  stockQuantity: number;
+  lowStock: boolean;
+  nearestExpiryDays?: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -126,6 +133,18 @@ export class MenuItemsService extends BaseService {
         });
       }),
     );
+  }
+
+  getLowStockItems(): Observable<MenuItem[]> {
+    return this.get<MenuItem[]>(`${this.baseUrl}/low-stock`).pipe(
+      catchError((error: any) => {
+        return throwError(() => new Error(error.message || 'An unexpected error occurred'));
+      }),
+    );
+  }
+
+  getStockSummary(): Observable<StockSummaryEntry[]> {
+    return this.get<StockSummaryEntry[]>(`${this.baseUrl}/stock-summary`);
   }
   filterMenuItemsByQuery(query: string): Observable<PaginatedResponseDTO<MenuItem>> {
     return this.get<PaginatedResponseDTO<MenuItem>>(`${this.baseUrl}/search/${query}`).pipe(

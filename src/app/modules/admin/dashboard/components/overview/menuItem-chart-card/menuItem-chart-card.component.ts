@@ -135,12 +135,26 @@ export class MenuItemChartCardComponent implements OnInit, OnDestroy {
           profit: order.totalCost
         }));
 
+        this.profitRate = this.computeProfitRate(this.profitData);
+
         const categories = this.profitData.map((item) => item.time);
         const data = this.profitData.map((item) => item.profit);
 
         this.updateChartOptions(categories, data);
       })
     );
+  }
+
+  private computeProfitRate(data: { time: string, profit: number }[]): number {
+    if (data.length < 2) return 0;
+    const first = data[0].profit;
+    const last = data[data.length - 1].profit;
+    if (first === 0) return 0;
+    return ((last - first) / first) * 100;
+  }
+
+  get hasProfitRate(): boolean {
+    return this.profitData.length >= 2 && this.profitData[0].profit !== 0;
   }
 
   private updateChartOptions(categories: string[], data: number[]): void {

@@ -1,8 +1,8 @@
 export const environment = {
   production: false,
   stripePublishKey: 'yourStripeKey',
-  apiUrl: 'http://localhost:8090/api',
-  apiStaticUrl: 'http://localhost:8090/',
+  apiUrl: 'http://localhost:8081/api',
+  apiStaticUrl: 'http://localhost:8081/',
   //Credentials
   adminCredentials: {
     email: 'admin@example.com',

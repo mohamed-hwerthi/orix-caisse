@@ -1,7 +1,7 @@
 <div class="flex-col rounded-lg bg-background px-8 py-8 sm:flex-row">
   <div class="mb-4 flex items-center justify-between">
     <div class="flex-col items-center">
-      <h3 class="text-md font-bold text-foreground">Food menu items Live Data</h3>
+      <h3 class="text-md font-bold text-foreground">Articles Live Data</h3>
       <span class="text-xs text-muted-foreground">Updated {{ timeSinceLastUpdate$ | async }} minutes ago</span>
     </div>
     <div class="flex flex-col gap-4 mt-4 sm:mt-0 sm:flex-row sm:items-center">
@@ -38,7 +38,7 @@
 
   <div class="mb-2 flex flex-col gap-4 md:flex-row md:gap-4">
     <!-- Category Filter Dropdown -->
-    <select [(ngModel)]="categoryFilter" (ngModelChange)="applyFiltersAndSorting()" class="border-2 border-primary/50">
+    <select [(ngModel)]="categoryFilter" (ngModelChange)="applyFiltersAndSorting()" class="border-2 border-primary/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600">
       <option value="">All Categories</option>
       <option [value]="'PIZZA'">Pizza</option>
       <option [value]="'BURGER'">Burger</option>
@@ -54,14 +54,14 @@
     <select
       [(ngModel)]="priceSortDirection"
       (ngModelChange)="applyFiltersAndSorting()"
-      class="border-2 border-primary/50">
+      class="border-2 border-primary/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600">
       <option value="">Sort by price</option>
       <option value="asc">Ascending</option>
       <option value="desc">Descending</option>
     </select>
 
     <!-- Default Filter Dropdown -->
-    <select [(ngModel)]="defaultFilter" (ngModelChange)="applyFiltersAndSorting()" class="border-2 border-primary/50">
+    <select [(ngModel)]="defaultFilter" (ngModelChange)="applyFiltersAndSorting()" class="border-2 border-primary/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600">
       <option value="all">All (default)</option>
       <option value="yes">Default</option>
       <option value="no">Non-default</option>

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { Order, User } from '../../../../../../core/models';
@@ -7,6 +7,7 @@ import { Store, select } from '@ngrx/store';
 import { openDeleteOrderModal, openUpdateOrderModal } from '../../../../../../core/state/modal/order/modal.actions';
 import { Observable } from 'rxjs';
 import { selectCurrentUser } from '../../../../../../core/state/auth/auth.selectors';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: '[orders-table-item]',
@@ -16,13 +17,31 @@ import { selectCurrentUser } from '../../../../../../core/state/auth/auth.select
 })
 export class OrdersTableItemComponent implements OnInit {
   @Input() order: Order = <Order>{};
+  @Output() refund = new EventEmitter<Order>();
   currentUser$: Observable<User | null>;
+  private toastr = inject(ToastrService);
+
+  openRefund(): void {
+    this.refund.emit(this.order);
+  }
 
   constructor(private store: Store) {
     this.currentUser$ = this.store.pipe(select(selectCurrentUser));
   }
 
-  ngOnInit(): void {console.log(this.order.id)}
+  ngOnInit(): void {}
+
+  get shortId(): string {
+    return this.order.id ? this.order.id.split('-')[0] : '';
+  }
+
+  copyId(): void {
+    if (!this.order.id) return;
+    navigator.clipboard.writeText(this.order.id).then(
+      () => this.toastr.success('Order ID copied'),
+      () => this.toastr.error('Copy failed'),
+    );
+  }
 
   openUpdateModal() {
     this.store.dispatch(openUpdateOrderModal({ order: this.order }));

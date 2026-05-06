@@ -68,7 +68,7 @@
     "PROFILE": "Profil",
     "ORDERS": "Commandes",
     "CONTACT": "Contact",
-    "COPYRIGHT": "© 2024 <a routerLink='/' class='hover:underline'>Food Squad™</a>. Tous droits réservés."
+    "COPYRIGHT": "© 2024 <a routerLink='/' class='hover:underline'>Orix Bio™</a>. Tous droits réservés."
   },
   "PROFILE_MENU": {
     "PROFILE": "Mon Profil",
@@ -104,32 +104,32 @@
     }
   },
   "ABOUT_US": {
-    "TITLE": "À propos de Food Squad : Un projet étudiant",
-    "DESCRIPTION": "Bienvenue chez Food Squad, une plateforme innovante de commande de nourriture développée dans le cadre d'un projet étudiant. Moi, George, suis le seul créateur et développeur de Food Squad, animé par une passion pour la technologie et l'amour de la bonne cuisine. Food Squad n'est pas seulement une application ; c'est le résultat de mon engagement à apprendre et à explorer de nouvelles opportunités dans le monde numérique.",
+    "TITLE": "À propos de Orix Bio : Un projet étudiant",
+    "DESCRIPTION": "Bienvenue chez Orix Bio, une plateforme innovante de commande de nourriture développée dans le cadre d'un projet étudiant. Moi, George, suis le seul créateur et développeur de Orix Bio, animé par une passion pour la technologie et l'amour de la bonne cuisine. Orix Bio n'est pas seulement une application ; c'est le résultat de mon engagement à apprendre et à explorer de nouvelles opportunités dans le monde numérique.",
     "MISSION": {
       "TITLE": "Notre Mission",
-      "DESCRIPTION": "Food Squad est né du désir d'explorer l'intersection entre la technologie et la gastronomie, sans objectif de profit. Ma mission avec Food Squad est simple : créer une expérience de commande de nourriture pratique et agréable pour les utilisateurs, tout en acquérant des compétences et des connaissances précieuses en tant qu'étudiant."
+      "DESCRIPTION": "Orix Bio est né du désir d'explorer l'intersection entre la technologie et la gastronomie, sans objectif de profit. Ma mission avec Orix Bio est simple : créer une expérience de commande de nourriture pratique et agréable pour les utilisateurs, tout en acquérant des compétences et des connaissances précieuses en tant qu'étudiant."
     },
     "VISION": {
       "TITLE": "Notre Vision",
-      "DESCRIPTION": "Alors que de nombreuses applications alimentaires visent le profit et l'extensibilité, la vision de Food Squad est unique. J'imagine Food Squad comme une plateforme qui met l'accent sur l'apprentissage et l'expérimentation, offrant aux utilisateurs un aperçu des capacités des projets étudiants. À travers Food Squad, je souhaite démontrer la créativité et l'innovation que les étudiants peuvent apporter."
+      "DESCRIPTION": "Alors que de nombreuses applications alimentaires visent le profit et l'extensibilité, la vision de Orix Bio est unique. J'imagine Orix Bio comme une plateforme qui met l'accent sur l'apprentissage et l'expérimentation, offrant aux utilisateurs un aperçu des capacités des projets étudiants. À travers Orix Bio, je souhaite démontrer la créativité et l'innovation que les étudiants peuvent apporter."
     },
     "UNIQUENESS": {
-      "TITLE": "Ce qui distingue Food Squad",
+      "TITLE": "Ce qui distingue Orix Bio",
       "FEATURES": [
-        "Projet éducatif : Food Squad sert de plateforme d'apprentissage pour moi en tant qu'étudiant, me permettant d'acquérir une expérience pratique en développement d'applications, conception d'interface utilisateur et gestion de projet.",
-        "Engagement communautaire : Bien que Food Squad ne vise pas le profit, il favorise l'engagement et la collaboration communautaire. Je suis ouvert aux commentaires et suggestions des utilisateurs, des étudiants et de toute personne souhaitant contribuer à la croissance du projet.",
-        "Approche transparente : Food Squad fonctionne avec transparence et honnêteté. En tant que projet étudiant, je suis franc sur mes objectifs et mes limites, offrant aux utilisateurs un aperçu unique du processus de développement.",
-        "Amélioration continue : Alors que je continue à développer Food Squad, je m'engage à une amélioration continue. Chaque mise à jour et chaque amélioration sont motivées par le désir d'apprendre et de perfectionner mes compétences de développeur."
+        "Projet éducatif : Orix Bio sert de plateforme d'apprentissage pour moi en tant qu'étudiant, me permettant d'acquérir une expérience pratique en développement d'applications, conception d'interface utilisateur et gestion de projet.",
+        "Engagement communautaire : Bien que Orix Bio ne vise pas le profit, il favorise l'engagement et la collaboration communautaire. Je suis ouvert aux commentaires et suggestions des utilisateurs, des étudiants et de toute personne souhaitant contribuer à la croissance du projet.",
+        "Approche transparente : Orix Bio fonctionne avec transparence et honnêteté. En tant que projet étudiant, je suis franc sur mes objectifs et mes limites, offrant aux utilisateurs un aperçu unique du processus de développement.",
+        "Amélioration continue : Alors que je continue à développer Orix Bio, je m'engage à une amélioration continue. Chaque mise à jour et chaque amélioration sont motivées par le désir d'apprendre et de perfectionner mes compétences de développeur."
       ]
     },
     "GET_INVOLVED": {
       "TITLE": "Participez",
-      "DESCRIPTION": "Vous souhaitez soutenir Food Squad ? Il existe plusieurs façons de participer :",
+      "DESCRIPTION": "Vous souhaitez soutenir Orix Bio ? Il existe plusieurs façons de participer :",
       "OPPORTUNITIES": [
-        "Donnez votre avis : Vos commentaires sont essentiels pour façonner l'avenir de Food Squad. Que vous ayez des suggestions d'amélioration ou des demandes de fonctionnalités, j'aimerais avoir votre avis.",
-        "Faites connaître le projet : Aidez à faire connaître Food Squad dans votre communauté et parmi vos camarades étudiants. Plus il y a d'utilisateurs, plus il y a d'opportunités d'apprentissage et de collaboration.",
-        "Contribuez : Êtes-vous un étudiant passionné par la technologie ? Envisagez de contribuer à Food Squad ! Que vous soyez développeur, designer ou passionné de marketing, il y a une place pour vous dans l'équipe Food Squad."
+        "Donnez votre avis : Vos commentaires sont essentiels pour façonner l'avenir de Orix Bio. Que vous ayez des suggestions d'amélioration ou des demandes de fonctionnalités, j'aimerais avoir votre avis.",
+        "Faites connaître le projet : Aidez à faire connaître Orix Bio dans votre communauté et parmi vos camarades étudiants. Plus il y a d'utilisateurs, plus il y a d'opportunités d'apprentissage et de collaboration.",
+        "Contribuez : Êtes-vous un étudiant passionné par la technologie ? Envisagez de contribuer à Orix Bio ! Que vous soyez développeur, designer ou passionné de marketing, il y a une place pour vous dans l'équipe Orix Bio."
       ]
     }
   },

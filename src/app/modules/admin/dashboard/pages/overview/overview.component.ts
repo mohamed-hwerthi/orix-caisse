@@ -9,7 +9,9 @@ import { MenuItem } from '../../../../../core/models';
 import { Subscription } from 'rxjs';
 import { LoaderComponent } from '../../../../../shared/components/loader/loader.component';
 import { CommonModule } from '@angular/common';
+import { StockLotService } from '../../../../../services/stock-lot.service';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-MenuItem',
@@ -23,6 +25,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
     MenuItemOverviewTableComponent,
     LoaderComponent,
     CommonModule,
+    RouterLink,
   ],
   animations: [
     trigger('slideInRight', [
@@ -44,13 +47,40 @@ export class OverviewComponent implements OnInit {
   public isLoading: boolean = true;
   public currentPage = 1;
   public totalPages!: number;
+  public stockAlerts = 0;
+  public stockRupture = 0;
+  public expiringLots = 0;
 
   private subscriptions: Subscription = new Subscription();
 
-  constructor(private menuItemsService: MenuItemsService) {}
+  constructor(
+    private menuItemsService: MenuItemsService,
+    private stockLotService: StockLotService,
+  ) {}
 
   ngOnInit(): void {
     this.loadMenuItems(this.currentPage);
+    this.loadStockAlerts();
+    this.loadExpiringLots();
+  }
+
+  loadStockAlerts(): void {
+    this.subscriptions.add(
+      this.menuItemsService.getLowStockItems().subscribe({
+        next: (items) => {
+          this.stockAlerts = items.length;
+          this.stockRupture = items.filter((i) => (i.stockQuantity ?? 0) <= 0).length;
+        },
+      }),
+    );
+  }
+
+  loadExpiringLots(): void {
+    this.subscriptions.add(
+      this.stockLotService.expiringCount(7).subscribe({
+        next: (r) => (this.expiringLots = r.count),
+      }),
+    );
   }
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();

@@ -16,7 +16,7 @@ import { SharedService } from './services/shared.service';
   imports: [NgClass, RouterOutlet, CommonModule, TranslateModule],
 })
 export class AppComponent implements OnInit {
-  title = 'Food Squad';
+  title = 'Orix Bio';
   isLoading$: Observable<boolean>;
   isDisplayingOnlyBarCoes$!: Observable<boolean>;
 

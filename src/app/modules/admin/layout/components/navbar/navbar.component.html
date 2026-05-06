@@ -19,7 +19,7 @@
         <a class="flex items-center justify-center rounded bg-primary p-2 focus:outline-none focus:ring-1">
           <svg-icon src="assets/icons/logo.svg"></svg-icon>
         </a>
-        <b class="hidden pl-3 text-sm font-bold text-foreground sm:block"> Food Squad </b>
+        <b class="hidden pl-3 text-sm font-bold text-foreground sm:block"> Orix Bio </b>
       </div>
 
       <!-- Desktop Menu -->
@@ -27,8 +27,29 @@
         <app-navbar-menu></app-navbar-menu>
       </div>
 
-      <!-- Profile menu -->
-      <div class="items-center justify-end sm:order-4 md:flex md:flex-1 lg:w-0">
+      <!-- Search + Notifications + Profile -->
+      <div class="items-center justify-end gap-3 sm:order-4 md:flex md:flex-1 lg:w-0">
+        <!-- Search -->
+        <div class="relative hidden lg:block">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-2 text-muted-foreground/60">
+            <svg-icon src="assets/icons/heroicons/outline/search.svg" [svgClass]="'h-4 w-4'"></svg-icon>
+          </span>
+          <input
+            type="text"
+            placeholder="Search…"
+            class="w-56 rounded-md border border-border bg-card pl-8 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white" />
+        </div>
+
+        <!-- Notifications -->
+        <button
+          type="button"
+          class="relative rounded-md p-2 text-muted-foreground hover:bg-card hover:text-foreground"
+          aria-label="Notifications">
+          <svg-icon src="assets/icons/heroicons/outline/bell.svg" [svgClass]="'h-5 w-5'"></svg-icon>
+          <span class="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-primary"></span>
+        </button>
+
+        <!-- Profile -->
         <app-profile-menu></app-profile-menu>
       </div>
     </div>

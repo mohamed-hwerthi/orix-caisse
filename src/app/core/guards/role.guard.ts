@@ -21,7 +21,7 @@ export const isAuthenticatedGuard: CanActivateFn = () => {
 export const isAllowedRoleGuard: CanActivateFn = () => {
   const authService = inject(AuthStateService);
   const router = inject(Router);
-  return authService.hasAnyRole(['Admin', 'Moderator']).pipe(
+  return authService.hasAnyRole(['ADMIN', 'MODERATOR', 'Admin', 'Moderator']).pipe(
     map(hasRole => {
       if (!hasRole) {
         // Redirect to unauthorized if not having an allowed role

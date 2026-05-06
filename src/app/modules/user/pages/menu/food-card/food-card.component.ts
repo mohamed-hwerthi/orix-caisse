@@ -10,6 +10,7 @@ import { openCreateReviewUserModal, openUsersReviewModal } from '../../../../../
 import { addItem } from '../../../../../core/state/shopping-cart/cart.actions';
 import { selectCartItems } from '../../../../../core/state/shopping-cart/cart.selectors';
 import { CartVisibilityService } from '../../../../../services/cart-visibility.service';
+import { PromotionEngineService } from '../../../../../services/promotion-engine.service';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -35,9 +36,31 @@ export class FoodCardComponent {
     private readonly store: Store,
     private readonly toastr: ToastrService,
     private readonly cartVisibility: CartVisibilityService,
+    private readonly promotionEngine: PromotionEngineService,
   ) {}
 
   ngOnInit(): void {}
+
+  get appliedPrice(): number {
+    return this.promotionEngine.computePrice(this.item).unitPrice;
+  }
+
+  get hasPromo(): boolean {
+    return this.promotionEngine.computePrice(this.item).promotion != null;
+  }
+
+  get promoLabel(): string {
+    const ap = this.promotionEngine.computePrice(this.item);
+    if (!ap.promotion) return '';
+    switch (ap.promotion.type) {
+      case 'PERCENT':
+        return `-${ap.promotion.value}%`;
+      case 'FIXED_AMOUNT':
+        return `-${ap.promotion.value} ${this.item.currency?.symbol || ''}`;
+      case 'FIXED_PRICE':
+        return 'PROMO';
+    }
+  }
 
   onImageLoad(): void {
     this.imageLoaded = true;

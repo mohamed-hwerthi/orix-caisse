@@ -3,57 +3,76 @@ import { MenuItem } from '../models/nav-menu-item.model';
 export class Menu {
   public static pages: MenuItem[] = [
     {
-      group: 'Dashboard',
+      group: 'Pilotage',
       separator: true,
       items: [
         {
           icon: 'assets/icons/heroicons/outline/chart-pie.svg',
           label: 'Dashboard',
           route: '/admin/dashboard',
-          children: [
-            { label: 'Overview', route: '/admin/dashboard' },
-          ],
+        },
+        {
+          icon: 'assets/icons/heroicons/outline/cursor-click.svg',
+          label: 'Caisse',
+          route: '/menu',
         },
       ],
     },
     {
-      group: 'Entities',
+      group: 'Catalogue',
       separator: true,
       items: [
         {
           icon: 'assets/icons/heroicons/outline/gift.svg',
-          label: 'Menu Items',
+          label: 'Articles',
           route: '/admin/items',
         },
         {
+          icon: 'assets/icons/heroicons/outline/star.svg',
+          label: 'Promotions',
+          route: '/admin/promotions',
+        },
+      ],
+    },
+    {
+      group: 'Stock',
+      separator: true,
+      items: [
+        {
+          icon: 'assets/icons/heroicons/outline/view-grid.svg',
+          label: 'Mouvements',
+          route: '/admin/stock',
+        },
+        {
+          icon: 'assets/icons/heroicons/outline/bell.svg',
+          label: 'Stock à risque',
+          route: '/admin/stock-alerts',
+        },
+        {
+          icon: 'assets/icons/heroicons/outline/folder.svg',
+          label: 'Lots & péremptions',
+          route: '/admin/stock-lots',
+        },
+        {
+          icon: 'assets/icons/heroicons/outline/edit.svg',
+          label: 'Inventaire physique',
+          route: '/admin/inventory',
+        },
+      ],
+    },
+    {
+      group: 'Ventes',
+      separator: true,
+      items: [
+        {
           icon: 'assets/icons/heroicons/outline/download.svg',
-          label: 'Orders',
+          label: 'Commandes',
           route: '/admin/orders',
         },
         {
-          icon: 'assets/icons/heroicons/outline/users.svg',
-          label: 'Users',
-          route: '/admin/users',
-        },
-        {
-          icon: 'assets/icons/heroicons/outline/star.svg',
-          label: 'Reviews',
-          route: '/admin/reviews',
-        },
-      ],
-    },   {
-      group: 'Pages',
-      separator: false,
-      items: [
-        {
-          icon: 'assets/icons/heroicons/outline/bell.svg',
-          label: 'Home',
-          route: '/',
-        },
-        {
-          icon: 'assets/icons/heroicons/outline/cog.svg',
-          label: 'Account Settings',
-          route: '/profile',
+          icon: 'assets/icons/heroicons/outline/lock-closed.svg',
+          label: 'Sessions de caisse',
+          route: '/admin/cash-sessions',
         },
       ],
     },

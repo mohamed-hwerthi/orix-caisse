@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import packageJson from '../../../../../../../package.json';
 
 @Component({
     selector: 'app-footer',
@@ -9,6 +10,7 @@ import { Component, OnInit } from '@angular/core';
 export class FooterComponent implements OnInit {
 
   public year: number = new Date().getFullYear();
+  public appName: string = (packageJson as any).displayName || 'Orix Bio';
 
   constructor() { }
 

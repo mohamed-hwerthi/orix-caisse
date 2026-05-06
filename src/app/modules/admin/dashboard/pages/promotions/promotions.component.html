@@ -1,0 +1,571 @@
+<div class="p-6">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+    <h1 class="text-2xl font-semibold">Promotions</h1>
+    <button
+      (click)="openCreate()"
+      class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+    >
+      + Nouvelle promotion
+    </button>
+  </div>
+
+  <!-- Toolbar : recherche + filtres -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 mb-4 space-y-3 dark:bg-gray-800/60 dark:border-gray-700">
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="relative flex-1 min-w-[240px]">
+        <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+        </span>
+        <input
+          type="text"
+          [(ngModel)]="searchInput"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Rechercher (nom, description, code)…"
+          class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white dark:border-gray-600 dark:placeholder-gray-500" />
+      </div>
+
+      <select
+        [ngModel]="typeFilter()"
+        (ngModelChange)="setTypeFilter($event)"
+        class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-white dark:border-gray-600">
+        <option value="all">Tous les types</option>
+        <option *ngFor="let t of promotionTypes" [value]="t.value">{{ t.label }}</option>
+      </select>
+
+      <button
+        (click)="resetFilters()"
+        class="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+        Réinitialiser
+      </button>
+    </div>
+
+    <!-- Chips statut -->
+    <div class="flex flex-wrap gap-1.5">
+      <button
+        *ngFor="let s of statusFilters"
+        type="button"
+        (click)="setStatusFilter(s.key)"
+        [class]="
+          'px-3 py-1 rounded-full text-xs font-semibold border transition ' +
+          (statusFilter() === s.key
+            ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+            : 'bg-transparent text-gray-600 border-gray-300 hover:bg-gray-100 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700')
+        ">
+        {{ s.label }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Bulk action bar -->
+  <div *ngIf="selectionCount() > 0"
+       class="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-4 flex items-center justify-between dark:bg-blue-900/30 dark:border-blue-700">
+    <div class="text-sm text-blue-900 dark:text-blue-200">
+      <strong>{{ selectionCount() }}</strong> promotion(s) sélectionnée(s)
+    </div>
+    <div class="flex gap-2">
+      <button (click)="bulkSetActive(true)" class="px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-semibold hover:bg-green-700">Activer</button>
+      <button (click)="bulkSetActive(false)" class="px-3 py-1.5 rounded-lg bg-gray-600 text-white text-xs font-semibold hover:bg-gray-700">Désactiver</button>
+      <button (click)="bulkDelete()" class="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700">Supprimer</button>
+      <button (click)="clearSelection()" class="px-3 py-1.5 rounded-lg border border-gray-300 text-xs text-gray-700 hover:bg-white dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">Annuler</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="py-12 text-center text-gray-500 dark:text-gray-400">Chargement…</div>
+
+  <div *ngIf="!loading" class="bg-white rounded-xl shadow overflow-x-auto dark:bg-gray-800">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-gray-600 uppercase text-xs dark:bg-gray-700 dark:text-gray-400">
+        <tr>
+          <th class="px-4 py-3 text-center w-10">
+            <input
+              type="checkbox"
+              [checked]="allOnPageSelected()"
+              (change)="toggleAllOnPage()"
+              class="rounded" />
+          </th>
+          <th class="px-4 py-3 text-left cursor-pointer select-none" (click)="setSort('name')">
+            Nom
+            <span *ngIf="sortKey() === 'name'" class="text-blue-600">{{ sortDir() === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+          <th class="px-4 py-3 text-center">Type</th>
+          <th class="px-4 py-3 text-right cursor-pointer select-none" (click)="setSort('value')">
+            Valeur
+            <span *ngIf="sortKey() === 'value'" class="text-blue-600">{{ sortDir() === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+          <th class="px-4 py-3 text-left cursor-pointer select-none" (click)="setSort('endDate')">
+            Période
+            <span *ngIf="sortKey() === 'endDate'" class="text-blue-600">{{ sortDir() === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+          <th class="px-4 py-3 text-left">Code</th>
+          <th class="px-4 py-3 text-left">Cible</th>
+          <th class="px-4 py-3 text-center cursor-pointer select-none" (click)="setSort('status')">
+            Statut
+            <span *ngIf="sortKey() === 'status'" class="text-blue-600">{{ sortDir() === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+          <th class="px-4 py-3 text-right">Performance</th>
+          <th class="px-4 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y dark:divide-gray-700">
+        <tr *ngFor="let p of paginated(); trackBy: trackById" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+          <td class="px-4 py-3 text-center">
+            <input
+              type="checkbox"
+              [checked]="isSelected(p.id)"
+              (change)="toggleSelection(p.id)"
+              class="rounded" />
+          </td>
+          <td class="px-4 py-3">
+            <div class="font-medium">{{ p.name }}</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">{{ p.description }}</div>
+          </td>
+          <td class="px-4 py-3 text-center text-xs text-gray-600 dark:text-gray-400">{{ p.type }}</td>
+          <td class="px-4 py-3 text-right font-bold text-blue-600">
+            {{ formatValue(p) }}
+          </td>
+          <td class="px-4 py-3 text-xs text-gray-600 dark:text-gray-400">
+            {{ p.startDate | date: 'dd/MM/yyyy' }}<br />
+            <span class="text-gray-400 dark:text-gray-500">→</span>
+            {{ p.endDate | date: 'dd/MM/yyyy' }}
+          </td>
+          <td class="px-4 py-3 text-xs font-mono">
+            <div>{{ p.promoCode || '—' }}</div>
+            <div *ngIf="p.maxUses != null" class="text-[10px] text-gray-500 font-sans dark:text-gray-400">
+              {{ p.usesCount || 0 }} / {{ p.maxUses }} utilisations
+            </div>
+            <div *ngIf="p.maxUses == null && (p.usesCount || 0) > 0" class="text-[10px] text-gray-500 font-sans dark:text-gray-400">
+              {{ p.usesCount }} utilisations
+            </div>
+          </td>
+          <td class="px-4 py-3 text-xs">
+            <div>
+              <span *ngIf="p.menuItemIds.length === 0 && p.categoryIds.length === 0" class="text-gray-500 dark:text-gray-400">
+                Tous les articles
+              </span>
+              <span *ngIf="p.menuItemIds.length > 0">
+                {{ p.menuItemIds.length }} article(s)
+              </span>
+              <span *ngIf="p.categoryIds.length > 0">
+                · {{ p.categoryIds.length }} catégorie(s)
+              </span>
+            </div>
+            <div class="mt-1 flex flex-wrap gap-1">
+              <span *ngIf="p.minOrderAmount" title="Montant minimum panier"
+                class="inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                ≥ {{ p.minOrderAmount }} DT
+              </span>
+              <span *ngIf="p.maxDiscountAmount" title="Plafond de réduction"
+                class="inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                max -{{ p.maxDiscountAmount }} DT
+              </span>
+              <span *ngIf="p.firstOrderOnly" title="1re commande uniquement"
+                class="inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                1ère commande
+              </span>
+              <span *ngIf="p.oncePerUser" title="1 fois par client"
+                class="inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
+                1×/client
+              </span>
+            </div>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <span [class]="'inline-block px-2 py-1 rounded-full text-xs font-semibold ' + status(p).color">
+              {{ status(p).label }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-right text-xs">
+            <ng-container *ngIf="getStats(p.id) as s; else noStats">
+              <div class="font-semibold text-gray-900 dark:text-white">{{ s.ordersCount }} cmd</div>
+              <div class="text-rose-600">−{{ s.discountTotal | number: '1.2-2' }} DT</div>
+              <div class="text-gray-500 dark:text-gray-400">CA {{ s.revenue | number: '1.2-2' }}</div>
+            </ng-container>
+            <ng-template #noStats><span class="text-gray-300">—</span></ng-template>
+          </td>
+          <td class="px-4 py-3 text-right whitespace-nowrap">
+            <div class="inline-flex items-center gap-1">
+              <button (click)="openStats(p)"
+                class="px-2 py-1 rounded-md text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 dark:text-emerald-300 dark:bg-emerald-900/30 dark:border-emerald-700/50 dark:hover:bg-emerald-900/50"
+                title="Voir stats">📊</button>
+              <button (click)="openEdit(p)"
+                class="px-2 py-1 rounded-md text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 dark:text-blue-300 dark:bg-blue-900/30 dark:border-blue-700/50 dark:hover:bg-blue-900/50"
+                title="Éditer">✏️</button>
+              <button (click)="duplicate(p)"
+                class="px-2 py-1 rounded-md text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 dark:text-purple-300 dark:bg-purple-900/30 dark:border-purple-700/50 dark:hover:bg-purple-900/50"
+                title="Dupliquer">📋</button>
+              <button (click)="remove(p)"
+                class="px-2 py-1 rounded-md text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 dark:text-red-300 dark:bg-red-900/30 dark:border-red-700/50 dark:hover:bg-red-900/50"
+                title="Supprimer">🗑️</button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="paginated().length === 0">
+          <td colspan="10" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+            <span *ngIf="promotions().length === 0">Aucune promotion</span>
+            <span *ngIf="promotions().length > 0">Aucun résultat pour les filtres actuels</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div *ngIf="filtered().length > 0"
+         class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-gray-200 bg-gray-50 dark:bg-gray-800/40 dark:border-gray-700">
+      <div class="text-xs text-gray-600 dark:text-gray-400">
+        <strong>{{ filtered().length }}</strong> résultat(s) · page <strong>{{ currentPage() }}</strong> / {{ totalPages() }}
+      </div>
+      <div class="flex items-center gap-2">
+        <label class="text-xs text-gray-600 dark:text-gray-400">Par page :</label>
+        <select
+          [ngModel]="pageSize()"
+          (ngModelChange)="setPageSize(+$event)"
+          class="border border-gray-300 rounded-md px-2 py-1 text-xs bg-white text-gray-900 dark:bg-gray-900 dark:text-white dark:border-gray-600">
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="25">25</option>
+          <option [ngValue]="50">50</option>
+        </select>
+        <button
+          (click)="goToPage(currentPage() - 1)"
+          [disabled]="currentPage() === 1"
+          class="px-2 py-1 rounded-md border border-gray-300 text-xs text-gray-700 hover:bg-white disabled:opacity-40 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+          ‹
+        </button>
+        <button
+          *ngFor="let n of pageNumbers()"
+          (click)="goToPage(n)"
+          [class]="
+            'px-2.5 py-1 rounded-md text-xs font-semibold ' +
+            (n === currentPage()
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'border border-gray-300 text-gray-700 hover:bg-white dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700')
+          ">
+          {{ n }}
+        </button>
+        <button
+          (click)="goToPage(currentPage() + 1)"
+          [disabled]="currentPage() === totalPages()"
+          class="px-2 py-1 rounded-md border border-gray-300 text-xs text-gray-700 hover:bg-white disabled:opacity-40 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+          ›
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale -->
+  <div
+    *ngIf="showForm"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
+    (click)="closeForm()"
+  >
+    <div
+      class="bg-white rounded-xl shadow-xl w-full max-w-3xl p-6 my-8 dark:bg-gray-800"
+      (click)="$event.stopPropagation()"
+    >
+      <h2 class="text-xl font-semibold mb-4">
+        {{ editing ? 'Modifier la promotion' : 'Nouvelle promotion' }}
+      </h2>
+
+      <div *ngIf="formErrors.length > 0" class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 dark:bg-red-900/30">
+        <ul class="list-disc list-inside text-sm text-red-700 dark:text-red-300">
+          <li *ngFor="let e of formErrors">{{ e }}</li>
+        </ul>
+      </div>
+
+      <form (ngSubmit)="save()" #f="ngForm" class="grid grid-cols-2 gap-4">
+        <div class="col-span-2">
+          <label class="block text-sm font-medium mb-1">Nom *</label>
+          <input type="text" [(ngModel)]="form.name" name="name" required class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
+        </div>
+
+        <div class="col-span-2">
+          <label class="block text-sm font-medium mb-1">Description</label>
+          <input type="text" [(ngModel)]="form.description" name="description" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Type *</label>
+          <select [(ngModel)]="form.type" name="type" required class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600">
+            <option *ngFor="let t of promotionTypes" [value]="t.value">{{ t.label }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Valeur *</label>
+          <input
+            type="number"
+            step="0.01"
+            min="0.01"
+            [max]="form.type === 'PERCENT' ? 100 : null"
+            [(ngModel)]="form.value"
+            name="value"
+            required
+            class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
+          <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">
+            <ng-container [ngSwitch]="form.type">
+              <span *ngSwitchCase="'PERCENT'">Pourcentage de réduction (1 à 100)</span>
+              <span *ngSwitchCase="'FIXED_AMOUNT'">Montant à déduire en DT</span>
+              <span *ngSwitchCase="'FIXED_PRICE'">Prix imposé final en DT</span>
+            </ng-container>
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Date début *</label>
+          <input type="date" [(ngModel)]="form.startDate" name="startDate" required class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Date fin *</label>
+          <input
+            type="date"
+            [(ngModel)]="form.endDate"
+            name="endDate"
+            required
+            [min]="form.startDate"
+            class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600"
+            [class.border-red-300]="form.startDate && form.endDate && form.endDate < form.startDate" />
+          <p *ngIf="form.startDate && form.endDate && form.endDate < form.startDate"
+             class="text-xs text-red-600 mt-1">
+            La date de fin doit être ≥ date de début
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Code promo (optionnel)</label>
+          <input type="text" [(ngModel)]="form.promoCode" name="promoCode" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Limite d'utilisations <span class="text-gray-500 text-xs dark:text-gray-400">(vide = illimité)</span></label>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            [(ngModel)]="form.maxUses"
+            name="maxUses"
+            class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
+          <p *ngIf="editing && (form.usesCount ?? 0) > 0" class="text-xs text-gray-500 mt-1 dark:text-gray-400">
+            Déjà utilisée {{ form.usesCount }} fois
+          </p>
+        </div>
+
+        <!-- Anti-abuse rules section -->
+        <div class="col-span-2 border-t pt-4 mt-2">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3 dark:text-gray-300">Règles anti-abus</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Montant minimum panier <span class="text-gray-500 text-xs dark:text-gray-400">(DT)</span></label>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                [(ngModel)]="form.minOrderAmount"
+                name="minOrderAmount"
+                placeholder="vide = aucun minimum"
+                class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
+              <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">Le panier doit dépasser ce montant pour appliquer la promo</p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-1">Réduction maximale <span class="text-gray-500 text-xs dark:text-gray-400">(DT)</span></label>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                [(ngModel)]="form.maxDiscountAmount"
+                name="maxDiscountAmount"
+                placeholder="vide = aucun plafond"
+                class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
+              <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">Plafonne la réduction totale de cette promo (utile pour limiter les % sur gros panier)</p>
+            </div>
+
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                [(ngModel)]="form.firstOrderOnly"
+                name="firstOrderOnly"
+                class="mt-1 rounded" />
+              <div>
+                <div class="text-sm font-medium">Première commande uniquement</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">Refusée si l'utilisateur a déjà passé une commande</div>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                [(ngModel)]="form.oncePerUser"
+                name="oncePerUser"
+                class="mt-1 rounded" />
+              <div>
+                <div class="text-sm font-medium">Une seule fois par utilisateur</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">Chaque client ne peut bénéficier de cette promo qu'une fois</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex items-end">
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" [(ngModel)]="form.isActive" name="isActive" class="rounded" />
+            <span class="text-sm">Activée</span>
+          </label>
+        </div>
+
+        <div class="col-span-2">
+          <label class="block text-sm font-medium mb-1">
+            Catégories ciblées <span class="text-gray-500 text-xs dark:text-gray-400">(vide = toutes)</span>
+          </label>
+          <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border rounded-lg border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              *ngFor="let c of categories"
+              (click)="toggleCategory(c.id)"
+              [class]="
+                'px-3 py-1 rounded-full text-xs border transition ' +
+                (form.categoryIds.includes(c.id)
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50')
+              "
+            >
+              {{ c.name }}
+            </button>
+          </div>
+        </div>
+
+        <div class="col-span-2">
+          <label class="block text-sm font-medium mb-1">
+            Articles ciblés <span class="text-gray-500 text-xs dark:text-gray-400">(vide = tous)</span>
+          </label>
+          <div class="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border rounded-lg border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              *ngFor="let p of products"
+              (click)="toggleProduct(p.id)"
+              [class]="
+                'px-3 py-1 rounded-full text-xs border transition ' +
+                (form.menuItemIds.includes(p.id)
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50')
+              "
+            >
+              {{ p.title }}
+            </button>
+          </div>
+        </div>
+
+        <div class="col-span-2 flex justify-end gap-2 pt-4 border-t mt-2">
+          <button type="button" (click)="closeForm()" class="px-4 py-2 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700">
+            Annuler
+          </button>
+          <button
+            type="submit"
+            [disabled]="!isFormValid"
+            class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            {{ editing ? 'Mettre à jour' : 'Créer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Stats modal -->
+  <div
+    *ngIf="showStatsModal"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
+    (click)="closeStats()">
+    <div
+      class="bg-white rounded-xl shadow-xl w-full max-w-4xl my-8 dark:bg-gray-800"
+      (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between border-b px-6 py-4">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+            Statistiques — {{ selectedStats?.promotionName || '…' }}
+          </h2>
+          <p class="text-xs text-gray-500 mt-0.5 dark:text-gray-400">Performance détaillée de cette promotion</p>
+        </div>
+        <button (click)="closeStats()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none dark:text-gray-500">×</button>
+      </div>
+
+      <div class="p-6 space-y-6">
+        <div *ngIf="statsLoading" class="text-center text-gray-500 py-12 dark:text-gray-400">Chargement…</div>
+
+        <ng-container *ngIf="!statsLoading && selectedStats as s">
+          <!-- KPIs -->
+          <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
+              <div class="text-xs text-gray-500 dark:text-gray-400">Commandes</div>
+              <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ s.ordersCount }}</div>
+            </div>
+            <div class="rounded-lg bg-rose-50 p-4 dark:bg-rose-900/30">
+              <div class="text-xs text-rose-700 dark:text-rose-300">Réduction totale</div>
+              <div class="text-2xl font-bold text-rose-700 dark:text-rose-300">−{{ s.discountTotal | number: '1.2-2' }}</div>
+            </div>
+            <div class="rounded-lg bg-emerald-50 p-4 dark:bg-emerald-900/30">
+              <div class="text-xs text-emerald-700 dark:text-emerald-300">CA généré</div>
+              <div class="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{{ s.revenue | number: '1.2-2' }}</div>
+            </div>
+            <div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/30">
+              <div class="text-xs text-blue-700 dark:text-blue-300">Réduction moy. / cmd</div>
+              <div class="text-2xl font-bold text-blue-700 dark:text-blue-300">{{ s.avgDiscountPerOrder | number: '1.2-2' }}</div>
+            </div>
+          </div>
+
+          <!-- Top products -->
+          <div *ngIf="s.topProducts && s.topProducts.length > 0">
+            <h3 class="text-sm font-semibold text-gray-700 mb-2 dark:text-gray-300">Top articles déclenchant cette promo</h3>
+            <div class="space-y-1">
+              <div
+                *ngFor="let tp of s.topProducts"
+                class="flex items-center justify-between rounded-md bg-gray-50 px-3 py-2 text-sm dark:bg-gray-700">
+                <span class="font-medium">{{ tp.title }}</span>
+                <span class="text-gray-600 dark:text-gray-400">{{ tp.quantitySold }} unité(s)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Orders list -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Commandes ({{ selectedStatsOrders.length }})</h3>
+              <button
+                (click)="exportPromoOrdersCsv()"
+                [disabled]="selectedStatsOrders.length === 0"
+                class="px-3 py-1.5 rounded-md bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-40">
+                Exporter CSV
+              </button>
+            </div>
+            <div class="max-h-80 overflow-y-auto border rounded-lg border-gray-200 dark:border-gray-700">
+              <table class="w-full text-xs">
+                <thead class="bg-gray-50 text-gray-600 uppercase text-[10px] sticky top-0 dark:bg-gray-700 dark:text-gray-400">
+                  <tr>
+                    <th class="px-3 py-2 text-left">Order ID</th>
+                    <th class="px-3 py-2 text-left">Date</th>
+                    <th class="px-3 py-2 text-left">Client</th>
+                    <th class="px-3 py-2 text-right">Original</th>
+                    <th class="px-3 py-2 text-right">Réduction</th>
+                    <th class="px-3 py-2 text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y dark:divide-gray-700">
+                  <tr *ngFor="let o of selectedStatsOrders" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="px-3 py-2 font-mono">#{{ o.orderId.substring(0, 8) }}</td>
+                    <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ o.createdOn | date: 'dd/MM/yy HH:mm' }}</td>
+                    <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ o.userEmail }}</td>
+                    <td class="px-3 py-2 text-right text-gray-500 dark:text-gray-400">{{ o.originalAmount | number: '1.2-2' }}</td>
+                    <td class="px-3 py-2 text-right text-rose-600">−{{ o.discountAmount | number: '1.2-2' }}</td>
+                    <td class="px-3 py-2 text-right font-semibold">{{ o.totalCost | number: '1.2-2' }}</td>
+                  </tr>
+                  <tr *ngIf="selectedStatsOrders.length === 0">
+                    <td colspan="6" class="px-3 py-6 text-center text-gray-500 dark:text-gray-400">
+                      Aucune commande n'a encore utilisé cette promotion
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

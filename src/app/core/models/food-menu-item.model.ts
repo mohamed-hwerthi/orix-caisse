@@ -16,8 +16,19 @@ export interface MenuItem {
   reviewCount: number;
   averageRating: number;
   medias: Media[];
-  quantity : number ; 
-  
+  quantity : number ;
+  barCode?: string;
+  sku?: string;
+  purchasePrice?: number;
+  stockQuantity?: number;
+  minStockAlert?: number;
+  unit?: string;
+  isActive?: boolean;
+  lowStock?: boolean;
+  allowNegativeStock?: boolean;
+  reorderQty?: number;
+  hasExpiryDate?: boolean;
+  nearestExpiryDays?: number;
 }
 
 export interface PaginatedResponseDTO<T> {

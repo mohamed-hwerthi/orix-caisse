@@ -36,4 +36,8 @@ export class MenuItemOverviewTableItemComponent implements OnInit {
       return description;
     }
   }
+
+  onImageError(event: Event): void {
+    (event.target as HTMLImageElement).src = 'assets/images/no-image.svg';
+  }
 }

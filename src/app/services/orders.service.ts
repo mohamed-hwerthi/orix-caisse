@@ -73,4 +73,16 @@ export class OrdersService extends BaseService {
     return this.get<Order[]>(`${this.baseUrl}/user/${userId}`);
   }
 
+  refundOrder(orderId: string, payload: RefundRequest): Observable<Order> {
+    return this.post<Order>(`${this.baseUrl}/${orderId}/refund`, payload).pipe(
+      tap((order) => this.orderUpdated(order))
+    );
+  }
+
+}
+
+export interface RefundRequest {
+  items: { menuItemId: number; quantity: number }[];
+  reason?: 'GENERIC' | 'DAMAGED' | 'EXPIRED' | 'CUSTOMER_ERROR';
+  notes?: string;
 }

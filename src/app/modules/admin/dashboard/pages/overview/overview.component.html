@@ -3,6 +3,39 @@
   <app-menuItem-header></app-menuItem-header>
   <!-- end Header -->
 
+  <!-- Stock alerts banner -->
+  <a
+    *ngIf="stockAlerts > 0"
+    routerLink="/admin/stock-alerts"
+    class="mb-4 flex items-center gap-3 rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 hover:bg-orange-100 transition dark:bg-orange-900/30">
+    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-white text-lg">⚠️</div>
+    <div class="flex-1">
+      <div class="text-sm font-semibold text-orange-900">
+        <strong>{{ stockAlerts }}</strong> article(s) en alerte stock
+        <span *ngIf="stockRupture > 0" class="ml-2 inline-block rounded-full bg-red-600 text-white px-2 py-0.5 text-[10px]">
+          {{ stockRupture }} rupture(s)
+        </span>
+      </div>
+      <div class="text-xs text-orange-700">Cliquer pour voir les suggestions de réapprovisionnement</div>
+    </div>
+    <span class="text-orange-600 text-xl">›</span>
+  </a>
+
+  <!-- DLC banner -->
+  <a
+    *ngIf="expiringLots > 0"
+    routerLink="/admin/stock-lots"
+    class="mb-4 flex items-center gap-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 hover:bg-rose-100 transition dark:bg-rose-900/30">
+    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-rose-500 text-white text-lg">⏰</div>
+    <div class="flex-1">
+      <div class="text-sm font-semibold text-rose-900">
+        <strong>{{ expiringLots }}</strong> lot(s) périment dans les 7 jours
+      </div>
+      <div class="text-xs text-rose-700 dark:text-rose-300">Vérifier et écouler en priorité</div>
+    </div>
+    <span class="text-rose-600 text-xl">›</span>
+  </a>
+
   <!-- Main Content Loading State -->
   <ng-container *ngIf="!isLoading; else loading">
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4" @slideInDown>

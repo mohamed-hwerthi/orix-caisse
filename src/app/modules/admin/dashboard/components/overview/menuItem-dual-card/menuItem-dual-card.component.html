@@ -1,7 +1,7 @@
 <div class="flex min-h-[420px] flex-col rounded-lg bg-background p-8 sm:flex-row">
   <div
-    [ngStyle]="{ 'background-image': 'url(' + menuItem.imageUrl + ')' }"
-    class="min-h-[200px] w-full flex-1 cursor-pointer rounded-md bg-cover transition duration-150 ease-in-out hover:opacity-75"></div>
+    [ngStyle]="{ 'background-image': 'url(' + (menuItem.imageUrl || 'assets/images/no-image.svg') + ')' }"
+    class="min-h-[200px] w-full flex-1 cursor-pointer rounded-md bg-cover bg-center bg-card transition duration-150 ease-in-out hover:opacity-75"></div>
   <!-- Details  -->
   <div class="mt-4 flex flex-1 flex-col justify-between space-y-2 sm:ml-6 md:mt-0">
     <div>
@@ -44,7 +44,7 @@
       </div>
     </div>
 
-    <div class="rounded-md border border-dashed border-border p-4 text-center">
+    <div class="rounded-md border border-dashed border-border p-4 text-center border-gray-200 dark:border-gray-700">
       <small class="text-muted-foreground">Total revenue</small>
       <h1 class="text-3xl font-semibold text-foreground">
         {{ (menuItem.price * menuItem.salesCount).toLocaleString('en-US', { maximumFractionDigits: 0 }) }} $

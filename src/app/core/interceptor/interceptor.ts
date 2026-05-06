@@ -16,51 +16,58 @@ export class AuthInterceptor implements HttpInterceptor {
     const accessToken = localStorage.getItem('accessToken');
     if (accessToken) {
       request = request.clone({
-        setHeaders: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        setHeaders: { Authorization: `Bearer ${accessToken}` },
       });
     }
 
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        console.error('HTTP error intercepted:', error);
+        // Don't try to refresh on the auth endpoints themselves to avoid loops
+        const isAuthCall = request.url.includes('/api/auth/');
 
-        if (error.status === 401 && !this.isRefreshing) {
+        if (error.status === 401 && !this.isRefreshing && !isAuthCall) {
           this.isRefreshing = true;
           return this.authService.refreshToken().pipe(
             switchMap((newAccessToken: string) => {
-              console.log('New access token obtained:', newAccessToken);
               localStorage.setItem('accessToken', newAccessToken);
-              this.isRefreshing = false; // Reset the flag
-              // Retry the failed request with the new token
-              request = request.clone({
-                setHeaders: {
-                  Authorization: `Bearer ${newAccessToken}`,
-                },
+              this.isRefreshing = false;
+              const retried = request.clone({
+                setHeaders: { Authorization: `Bearer ${newAccessToken}` },
               });
-              return next.handle(request);
+              // Retry once. If it fails AGAIN with 401 → force logout (no infinite loop).
+              return next.handle(retried).pipe(
+                catchError((retryErr: HttpErrorResponse) => {
+                  if (retryErr.status === 401) {
+                    this.forceLogout('Session invalide — veuillez vous reconnecter');
+                  }
+                  return throwError(() => retryErr);
+                }),
+              );
             }),
-            catchError((err) => {
-              console.error('Error refreshing token:', err);
-              this.isRefreshing = false; // Reset the flag
-              if (err.status === 403 || err.status === 401) {
-                this.toastr.info("Session expired. Please log in again.");
-              }
-              localStorage.removeItem('accessToken');
-              sessionStorage.clear();
-              this.router.navigate(['/auth/sign-in']);
-              return throwError(() => new Error('Session expired. Please log in again.'));
+            catchError(() => {
+              this.isRefreshing = false;
+              this.forceLogout('Session expirée — veuillez vous reconnecter');
+              return throwError(() => new Error('Session expired'));
             }),
             finalize(() => {
-              this.isRefreshing = false; // Reset the flag in case of any error
+              this.isRefreshing = false;
             }),
           );
-        } else {
-          this.isRefreshing = false; // Reset the flag
-          return throwError(() => error);
         }
+
+        // 401 on auth endpoints OR while already refreshing → fail directly + logout
+        if (error.status === 401) {
+          this.forceLogout('Session expirée');
+        }
+        return throwError(() => error);
       }),
     );
+  }
+
+  private forceLogout(message: string): void {
+    this.toastr.info(message);
+    localStorage.removeItem('accessToken');
+    sessionStorage.clear();
+    this.router.navigate(['/auth/sign-in']);
   }
 }

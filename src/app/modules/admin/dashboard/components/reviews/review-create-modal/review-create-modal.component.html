@@ -9,7 +9,7 @@
         <button
           type="button"
           (click)="closeModal()"
-          class="ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg bg-transparent text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white"
+          class="ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg bg-transparent text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white dark:text-gray-500"
           data-modal-toggle="crud-modal">
           <svg class="h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
             <path
@@ -23,7 +23,7 @@
         </button>
       </div>
       <!-- Modal body -->
-      <form class="p-4 md:p-5 " [formGroup]="reviewForm" (ngSubmit)="createReview()">
+      <form class="p-4 md:p-5" [formGroup]="reviewForm" (ngSubmit)="createReview()">
         <div class="mb-4 grid grid-cols-2 gap-4">
           <!-- Comment Input -->
           <div class="col-span-2">
@@ -61,7 +61,7 @@
           <!-- Menu Item Dropdown -->
           <div class="col-span-2">
             <label for="menuItemId" class="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
-              Menu Item <span class="text-red-500">*</span>
+              Article <span class="text-red-500">*</span>
             </label>
             <select
               formControlName="menuItemId"

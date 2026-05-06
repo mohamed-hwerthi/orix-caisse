@@ -5,6 +5,11 @@
   (keydown.enter)="addToCart(item)"
   class="group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-rose-300 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800">
 
+  <!-- Promo badge -->
+  <div *ngIf="hasPromo" class="absolute top-2 left-2 z-10 rounded-full bg-rose-500 px-2.5 py-1 text-xs font-bold text-white shadow-md">
+    {{ promoLabel }}
+  </div>
+
   <!-- Image / Placeholder -->
   <div class="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
     <ng-container *ngIf="item.medias && item.medias.length > 0; else noImage">
@@ -38,13 +43,26 @@
       {{ item.title }}
     </h3>
 
-    <div class="mt-1.5 flex items-baseline gap-1">
-      <span class="text-xl font-extrabold text-primary">
-        {{ item.price | number: '1.2-2' }}
-      </span>
-      <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-        {{ item.currency.symbol }}
-      </span>
+    <div class="mt-1.5 flex items-baseline gap-1.5">
+      <ng-container *ngIf="hasPromo; else regularPrice">
+        <span class="text-xl font-extrabold text-rose-600">
+          {{ appliedPrice | number: '1.2-2' }}
+        </span>
+        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+          {{ item.currency.symbol }}
+        </span>
+        <span class="text-xs text-gray-400 line-through">
+          {{ item.price | number: '1.2-2' }}
+        </span>
+      </ng-container>
+      <ng-template #regularPrice>
+        <span class="text-xl font-extrabold text-primary">
+          {{ item.price | number: '1.2-2' }}
+        </span>
+        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+          {{ item.currency.symbol }}
+        </span>
+      </ng-template>
     </div>
   </div>
 </div>

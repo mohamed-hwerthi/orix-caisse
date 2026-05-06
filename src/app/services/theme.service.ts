@@ -6,10 +6,15 @@ import { effect } from '@angular/core';
   providedIn: 'root',
 })
 export class ThemeService {
-  public theme = signal<Theme>({ mode: 'dark', color: 'base' });
+  // Dark mode disabled — always light.
+  public theme = signal<Theme>({ mode: 'light', color: 'base' });
 
   constructor() {
     this.loadTheme();
+    // Force light regardless of stored preference
+    if (this.theme().mode !== 'light') {
+      this.theme.update((t) => ({ ...t, mode: 'light' }));
+    }
     effect(() => {
       this.setTheme();
     });
@@ -18,7 +23,13 @@ export class ThemeService {
   private loadTheme() {
     const theme = localStorage.getItem('theme');
     if (theme) {
-      this.theme.set(JSON.parse(theme));
+      try {
+        const parsed = JSON.parse(theme) as Theme;
+        // Override mode to light always
+        this.theme.set({ ...parsed, mode: 'light' });
+      } catch {
+        // ignore corrupted storage
+      }
     }
   }
 
@@ -27,12 +38,14 @@ export class ThemeService {
     this.setThemeClass();
   }
 
+  /** Always false — dark mode is disabled. */
   public get isDark(): boolean {
-    return this.theme().mode == 'dark';
+    return false;
   }
 
   private setThemeClass() {
-    document.querySelector('html')!.className = this.theme().mode;
+    // Force light class regardless of theme mode
+    document.querySelector('html')!.className = 'light';
     document.querySelector('html')!.setAttribute('data-theme', this.theme().color);
   }
 }

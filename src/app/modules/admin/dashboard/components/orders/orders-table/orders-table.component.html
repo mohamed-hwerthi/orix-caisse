@@ -1,5 +1,6 @@
 <div class="flex-col rounded-lg bg-background px-8 py-8 sm:flex-row">
-  <div class="mb-4 flex items-center justify-between">
+  <!-- Header -->
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <div class="flex-col items-center">
       <h3 class="text-md font-bold text-foreground">Orders Live Data</h3>
       <span class="text-xs text-muted-foreground">Updated {{ timeSinceLastUpdate$ | async }} minutes ago</span>
@@ -18,12 +19,62 @@
     </app-button>
   </div>
 
+  <!-- Date filter -->
+  <div class="mb-4 flex flex-wrap items-center gap-2">
+    <button
+      type="button"
+      (click)="setDateFilter('today')"
+      [ngClass]="dateFilter === 'today' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:text-foreground'"
+      class="rounded-md px-3 py-1.5 text-xs font-semibold">
+      Today
+    </button>
+    <button
+      type="button"
+      (click)="setDateFilter('yesterday')"
+      [ngClass]="dateFilter === 'yesterday' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:text-foreground'"
+      class="rounded-md px-3 py-1.5 text-xs font-semibold">
+      Yesterday
+    </button>
+    <button
+      type="button"
+      (click)="setDateFilter('all')"
+      [ngClass]="dateFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:text-foreground'"
+      class="rounded-md px-3 py-1.5 text-xs font-semibold">
+      All
+    </button>
+    <input
+      type="date"
+      [(ngModel)]="customDate"
+      (change)="onCustomDateChange()"
+      [ngClass]="dateFilter === 'custom' ? 'border-primary' : 'border-border'"
+      class="rounded-md border bg-card px-2 py-1.5 text-xs text-foreground border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white" />
+  </div>
+
+  <!-- Stats -->
+  <div class="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div class="rounded-lg bg-card p-4">
+      <div class="text-xs text-muted-foreground">Orders</div>
+      <div class="text-2xl font-bold text-foreground">{{ stats.count }}</div>
+    </div>
+    <div class="rounded-lg bg-card p-4">
+      <div class="text-xs text-muted-foreground">Revenue</div>
+      <div class="text-2xl font-bold text-green-500">{{ stats.revenue | currency }}</div>
+    </div>
+    <div class="rounded-lg bg-card p-4">
+      <div class="text-xs text-muted-foreground">Paid</div>
+      <div class="text-2xl font-bold text-foreground">{{ stats.paid }} <span class="text-xs text-muted-foreground">/ {{ stats.count }}</span></div>
+    </div>
+    <div class="rounded-lg bg-card p-4">
+      <div class="text-xs text-muted-foreground">Avg order</div>
+      <div class="text-2xl font-bold text-foreground">{{ stats.avg | currency }}</div>
+    </div>
+  </div>
+
   <div class="relative overflow-x-auto">
     <div *ngIf="isLoading" class="mx-auto p-48">
       <app-loader></app-loader>
     </div>
     <table *ngIf="!isLoading" class="w-full table-auto">
-      <!--Table head-->
       <thead class="border-b-2 text-xs uppercase text-muted-foreground">
         <tr>
           <th class="py-3 text-left">Order ID</th>
@@ -35,23 +86,85 @@
           <th class="py-3 text-end">Actions</th>
         </tr>
       </thead>
-      <!--end Table head-->
-      <!--Table body-->
       <tbody>
         <tr
-        *ngFor="let order of orders"
-        orders-table-item
-        [order]="order"
-        class="border-b border-dashed border-border hover:bg-card"></tr>
+          *ngFor="let order of orders"
+          orders-table-item
+          [order]="order"
+          (refund)="openRefundModal($event)"
+          class="border-b border-dashed border-border hover:bg-card"></tr>
       </tbody>
-      <!--end::Table body-->
     </table>
-    <p *ngIf="!isLoading && orders.length === 0" class="mx-auto p-12 text-center text-foreground">No items available</p>
-      <!-- Pagination -->
-      <app-pagination
+    <p *ngIf="!isLoading && orders.length === 0" class="mx-auto p-12 text-center text-foreground">
+      No orders for the selected period
+    </p>
+    <app-pagination
+      *ngIf="totalPages > 1"
       class="mx-auto"
       [currentPage]="currentPage"
       [totalPages]="totalPages"
       (pageChange)="onPageChange($event)"></app-pagination>
+  </div>
+
+  <!-- Refund modal -->
+  <div *ngIf="refundOrder as ord" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" (click)="closeRefundModal()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto dark:bg-gray-800" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Retour commande</h2>
+        <button (click)="closeRefundModal()" class="text-gray-400 hover:text-gray-600 text-2xl dark:text-gray-500">×</button>
+      </div>
+
+      <div class="mb-4 p-3 rounded-lg bg-gray-50 text-sm dark:bg-gray-800/40">
+        <div><span class="font-semibold">Commande :</span> #{{ ord.id?.substring(0, 8) }}</div>
+        <div><span class="font-semibold">Client :</span> {{ ord.userEmail }}</div>
+        <div><span class="font-semibold">Total :</span> {{ ord.totalCost | currency }}</div>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Raison</label>
+        <select [(ngModel)]="refundReason" class="w-full border rounded-lg px-3 py-2 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+          <option value="GENERIC">Retour standard (article remis en stock)</option>
+          <option value="CUSTOMER_ERROR">Erreur client (article remis en stock)</option>
+          <option value="DAMAGED">Article endommagé (perte)</option>
+          <option value="EXPIRED">Article périmé (perte)</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">
+          DAMAGED / EXPIRED ne remettent pas l'article en stock (mouvement LOSS).
+        </p>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Articles à retourner</label>
+        <div class="border rounded-lg divide-y dark:divide-gray-700 border-gray-200 dark:border-gray-700">
+          <div *ngFor="let l of refundLines" class="p-3 flex items-center justify-between gap-3">
+            <div>
+              <div class="font-medium">Article ID #{{ l.menuItemId }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">Quantité commandée : {{ l.maxQty }}</div>
+            </div>
+            <input
+              type="number"
+              min="0"
+              [max]="l.maxQty"
+              [(ngModel)]="l.quantity"
+              class="w-20 text-right border rounded-md px-2 py-1 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Notes (optionnel)</label>
+        <textarea [(ngModel)]="refundNotes" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"></textarea>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button (click)="closeRefundModal()" class="px-4 py-2 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700">Annuler</button>
+        <button
+          (click)="submitRefund()"
+          [disabled]="refundSubmitting"
+          class="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-50">
+          Confirmer le retour
+        </button>
+      </div>
+    </div>
   </div>
 </div>
