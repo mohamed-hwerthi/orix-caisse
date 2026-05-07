@@ -48,16 +48,6 @@ export class Menu {
           label: 'Stock à risque',
           route: '/admin/stock-alerts',
         },
-        {
-          icon: 'assets/icons/heroicons/outline/folder.svg',
-          label: 'Lots & péremptions',
-          route: '/admin/stock-lots',
-        },
-        {
-          icon: 'assets/icons/heroicons/outline/edit.svg',
-          label: 'Inventaire physique',
-          route: '/admin/inventory',
-        },
       ],
     },
     {
