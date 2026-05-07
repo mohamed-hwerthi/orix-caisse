@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import {
   CashMovementReason,
@@ -10,6 +11,7 @@ import {
   CashSessionSummary,
 } from '../../../services/cash-session.service';
 import { CustomToasterService } from '../../../services/custom-toaster.service';
+import * as AuthActions from '../../../core/state/auth/auth.actions';
 
 @Component({
   selector: 'app-cash-session-bar',
@@ -59,6 +61,7 @@ export class CashSessionBarComponent implements OnInit, OnDestroy {
   constructor(
     private cashSessionService: CashSessionService,
     private toaster: CustomToasterService,
+    private store: Store,
   ) {}
 
   ngOnInit(): void {
@@ -192,14 +195,19 @@ export class CashSessionBarComponent implements OnInit, OnDestroy {
         })
         .subscribe({
           next: (closed) => {
-            this.toaster.handelSuccessToaster(`Z-report ${closed.zReportNumber} généré`);
+            this.toaster.handelSuccessToaster(`Z-report ${closed.zReportNumber} généré — déconnexion…`);
             if (closed.id) {
               this.cashSessionService.downloadZReport(closed.id).subscribe({
                 next: (blob) => {
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
                   a.href = url;
-                  a.download = `${closed.zReportNumber || 'z-report-' + closed.id}.pdf`;
+                  // Filename: Orix_Z-report_YYYY-MM-DD_HHhMM_<zNumber>.pdf
+                  const d = new Date(closed.closedAt || Date.now());
+                  const pad = (n: number) => n.toString().padStart(2, '0');
+                  const datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}h${pad(d.getMinutes())}`;
+                  const zNum = closed.zReportNumber || `S${closed.id}`;
+                  a.download = `Orix_Z-report_${datePart}_${zNum}.pdf`;
                   a.click();
                   URL.revokeObjectURL(url);
                 },
@@ -209,8 +217,10 @@ export class CashSessionBarComponent implements OnInit, OnDestroy {
             this.session.set(null);
             this.showCloseModal.set(false);
             this.closing.set(false);
-            this.openingAmountInput = closed.countedCash || 0;
-            this.showOpenSession.set(true);
+            // Auto-logout after closing the cash session — leaves the screen
+            // safe between shifts and forces the next cashier to authenticate.
+            // Small delay so the Z-report download starts and the toast is seen.
+            setTimeout(() => this.store.dispatch(AuthActions.logout()), 1500);
           },
           error: (err) => {
             this.closing.set(false);

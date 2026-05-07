@@ -85,7 +85,12 @@ export class CashSessionsComponent implements OnInit, OnDestroy {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${s.zReportNumber || 'z-report-' + s.id}.pdf`;
+          // Filename: Orix_Z-report_YYYY-MM-DD_HHhMM_<zNumber>.pdf
+          const d = new Date(s.closedAt || s.openedAt || Date.now());
+          const pad = (n: number) => n.toString().padStart(2, '0');
+          const datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}h${pad(d.getMinutes())}`;
+          const zNum = s.zReportNumber || `S${s.id}`;
+          a.download = `Orix_Z-report_${datePart}_${zNum}.pdf`;
           a.click();
           URL.revokeObjectURL(url);
         },

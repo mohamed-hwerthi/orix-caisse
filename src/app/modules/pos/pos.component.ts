@@ -379,7 +379,11 @@ export class PosComponent implements OnInit, OnDestroy {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${closed.zReportNumber || 'z-report-' + closed.id}.pdf`;
+                const d = new Date(closed.closedAt || Date.now());
+                const pad = (n: number) => n.toString().padStart(2, '0');
+                const datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}h${pad(d.getMinutes())}`;
+                const zNum = closed.zReportNumber || `S${closed.id}`;
+                a.download = `Orix_Z-report_${datePart}_${zNum}.pdf`;
                 a.click();
                 URL.revokeObjectURL(url);
               },
