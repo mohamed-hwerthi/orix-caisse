@@ -30,6 +30,17 @@ export class PromotionsComponent implements OnInit, OnDestroy {
   form: Promotion = this.empty();
   formErrors: string[] = [];
 
+  // Stepper
+  currentStep = signal<number>(1);
+  readonly totalSteps = 3;
+  steps = [
+    { n: 1, title: 'Informations', subtitle: 'Nom et description', icon: '📝' },
+    { n: 2, title: 'Remise', subtitle: 'Type, valeur et période', icon: '💰' },
+    { n: 3, title: 'Cibles', subtitle: 'Articles ciblés', icon: '🎯' },
+  ];
+
+  productSearch = '';
+
   // Filtres
   searchInput = '';
   searchTerm = signal('');
@@ -345,6 +356,8 @@ export class PromotionsComponent implements OnInit, OnDestroy {
     this.editing = false;
     this.form = this.empty();
     this.formErrors = [];
+    this.currentStep.set(1);
+    this.productSearch = '';
     this.showForm = true;
   }
 
@@ -352,6 +365,8 @@ export class PromotionsComponent implements OnInit, OnDestroy {
     this.editing = true;
     this.form = structuredClone(p);
     this.formErrors = [];
+    this.currentStep.set(1);
+    this.productSearch = '';
     this.showForm = true;
   }
 
@@ -364,7 +379,92 @@ export class PromotionsComponent implements OnInit, OnDestroy {
     if (copy.promoCode) copy.promoCode = `${copy.promoCode}-COPY`;
     this.form = copy;
     this.formErrors = [];
+    this.currentStep.set(1);
+    this.productSearch = '';
     this.showForm = true;
+  }
+
+  // Stepper helpers
+  goToStep(step: number): void {
+    if (step < 1 || step > this.totalSteps) return;
+    // Allow going back freely; for forward, validate the current step first
+    if (step > this.currentStep()) {
+      const err = this.validateStep(this.currentStep());
+      if (err) {
+        this.toaster.handelErrorToaster(err);
+        return;
+      }
+    }
+    this.currentStep.set(step);
+  }
+
+  nextStep(): void {
+    const err = this.validateStep(this.currentStep());
+    if (err) {
+      this.toaster.handelErrorToaster(err);
+      return;
+    }
+    if (this.currentStep() < this.totalSteps) this.currentStep.set(this.currentStep() + 1);
+  }
+
+  prevStep(): void {
+    if (this.currentStep() > 1) this.currentStep.set(this.currentStep() - 1);
+  }
+
+  isStepValid(step: number): boolean {
+    return this.validateStep(step) == null;
+  }
+
+  validateStep(step: number): string | null {
+    switch (step) {
+      case 1:
+        if (!this.form.name?.trim()) return 'Le nom est obligatoire';
+        return null;
+      case 2:
+        if (this.form.value == null) return 'La valeur est obligatoire';
+        if (this.form.value <= 0) return 'La valeur doit être supérieure à 0';
+        if (this.form.type === 'PERCENT' && this.form.value > 100) return 'Le pourcentage doit être entre 1 et 100';
+        if (!this.form.startDate) return 'Date de début obligatoire';
+        if (!this.form.endDate) return 'Date de fin obligatoire';
+        if (this.form.endDate < this.form.startDate) return 'La date de fin doit être après la date de début';
+        return null;
+      case 3:
+        return null; // Cibles optionnelles
+      default:
+        return null;
+    }
+  }
+
+  filteredProducts(): MenuItem[] {
+    const q = this.productSearch.toLowerCase().trim();
+    if (!q) return this.products;
+    return this.products.filter((p) => p.title?.toLowerCase().includes(q));
+  }
+
+  selectAllCategories(): void {
+    this.form.categoryIds = this.categories.map((c) => c.id);
+  }
+
+  clearCategories(): void {
+    this.form.categoryIds = [];
+  }
+
+  selectAllProducts(): void {
+    this.form.menuItemIds = this.products.map((p) => p.id);
+  }
+
+  clearProducts(): void {
+    this.form.menuItemIds = [];
+  }
+
+  promoTypeLabel(type: PromotionType): string {
+    const t = this.promotionTypes.find((x) => x.value === type);
+    return t?.label || type;
+  }
+
+  promoTypeSuffix(type: PromotionType): string {
+    const t = this.promotionTypes.find((x) => x.value === type);
+    return t?.suffix || '';
   }
 
   closeForm(): void {

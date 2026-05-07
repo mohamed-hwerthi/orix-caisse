@@ -28,6 +28,10 @@ export class StockComponent implements OnInit, OnDestroy {
   showForm = false;
   filterMenuItemId: number | null = null;
 
+  // Searchable product filter (replaces the long select)
+  filterSearch = '';
+  filterDropdownOpen = false;
+
   page = 0;
   limit = 20;
   totalCount = 0;
@@ -185,6 +189,42 @@ export class StockComponent implements OnInit, OnDestroy {
       reason: '',
       referenceDoc: '',
     };
+  }
+
+  filteredProducts(): MenuItem[] {
+    const q = this.filterSearch.toLowerCase().trim();
+    if (!q) return this.products.slice(0, 50);
+    return this.products
+      .filter((p) =>
+        p.title?.toLowerCase().includes(q) ||
+        p.sku?.toLowerCase().includes(q) ||
+        p.barCode?.toLowerCase().includes(q),
+      )
+      .slice(0, 50);
+  }
+
+  selectFilterProduct(p: MenuItem | null): void {
+    if (p) {
+      this.filterMenuItemId = p.id;
+      this.filterSearch = p.title;
+    } else {
+      this.filterMenuItemId = null;
+      this.filterSearch = '';
+    }
+    this.filterDropdownOpen = false;
+    this.onFilterChange();
+  }
+
+  clearFilter(): void {
+    this.filterMenuItemId = null;
+    this.filterSearch = '';
+    this.filterDropdownOpen = false;
+    this.onFilterChange();
+  }
+
+  onFilterBlur(): void {
+    // Delay to allow mousedown on dropdown items to fire first
+    setTimeout(() => (this.filterDropdownOpen = false), 150);
   }
 
   /**

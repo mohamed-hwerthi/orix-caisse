@@ -250,221 +250,290 @@
     </div>
   </div>
 
-  <!-- Modale -->
+  <!-- Modale stepper -->
   <div
     *ngIf="showForm"
-    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto"
     (click)="closeForm()"
   >
     <div
-      class="bg-white rounded-xl shadow-xl w-full max-w-3xl p-6 my-8 dark:bg-gray-800"
+      class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl my-8 dark:bg-gray-800 overflow-hidden flex flex-col max-h-[92vh]"
       (click)="$event.stopPropagation()"
     >
-      <h2 class="text-xl font-semibold mb-4">
-        {{ editing ? 'Modifier la promotion' : 'Nouvelle promotion' }}
-      </h2>
-
-      <div *ngIf="formErrors.length > 0" class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 dark:bg-red-900/30">
-        <ul class="list-disc list-inside text-sm text-red-700 dark:text-red-300">
-          <li *ngFor="let e of formErrors">{{ e }}</li>
-        </ul>
+      <!-- Header -->
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+        <div>
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+            {{ editing ? '✏️ Modifier la promotion' : '✨ Nouvelle promotion' }}
+          </h2>
+          <p class="text-xs text-gray-500 mt-0.5 dark:text-gray-400">
+            Étape {{ currentStep() }} sur {{ totalSteps }} — {{ steps[currentStep() - 1].title }}
+          </p>
+        </div>
+        <button (click)="closeForm()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none dark:text-gray-500 dark:hover:text-gray-200">×</button>
       </div>
 
-      <form (ngSubmit)="save()" #f="ngForm" class="grid grid-cols-2 gap-4">
-        <div class="col-span-2">
-          <label class="block text-sm font-medium mb-1">Nom *</label>
-          <input type="text" [(ngModel)]="form.name" name="name" required class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
-        </div>
-
-        <div class="col-span-2">
-          <label class="block text-sm font-medium mb-1">Description</label>
-          <input type="text" [(ngModel)]="form.description" name="description" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">Type *</label>
-          <select [(ngModel)]="form.type" name="type" required class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600">
-            <option *ngFor="let t of promotionTypes" [value]="t.value">{{ t.label }}</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">Valeur *</label>
-          <input
-            type="number"
-            step="0.01"
-            min="0.01"
-            [max]="form.type === 'PERCENT' ? 100 : null"
-            [(ngModel)]="form.value"
-            name="value"
-            required
-            class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
-          <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">
-            <ng-container [ngSwitch]="form.type">
-              <span *ngSwitchCase="'PERCENT'">Pourcentage de réduction (1 à 100)</span>
-              <span *ngSwitchCase="'FIXED_AMOUNT'">Montant à déduire en DT</span>
-              <span *ngSwitchCase="'FIXED_PRICE'">Prix imposé final en DT</span>
-            </ng-container>
-          </p>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">Date début *</label>
-          <input type="date" [(ngModel)]="form.startDate" name="startDate" required class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">Date fin *</label>
-          <input
-            type="date"
-            [(ngModel)]="form.endDate"
-            name="endDate"
-            required
-            [min]="form.startDate"
-            class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600"
-            [class.border-red-300]="form.startDate && form.endDate && form.endDate < form.startDate" />
-          <p *ngIf="form.startDate && form.endDate && form.endDate < form.startDate"
-             class="text-xs text-red-600 mt-1">
-            La date de fin doit être ≥ date de début
-          </p>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">Code promo (optionnel)</label>
-          <input type="text" [(ngModel)]="form.promoCode" name="promoCode" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">Limite d'utilisations <span class="text-gray-500 text-xs dark:text-gray-400">(vide = illimité)</span></label>
-          <input
-            type="number"
-            min="1"
-            step="1"
-            [(ngModel)]="form.maxUses"
-            name="maxUses"
-            class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
-          <p *ngIf="editing && (form.usesCount ?? 0) > 0" class="text-xs text-gray-500 mt-1 dark:text-gray-400">
-            Déjà utilisée {{ form.usesCount }} fois
-          </p>
-        </div>
-
-        <!-- Anti-abuse rules section -->
-        <div class="col-span-2 border-t pt-4 mt-2">
-          <h3 class="text-sm font-semibold text-gray-700 mb-3 dark:text-gray-300">Règles anti-abus</h3>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium mb-1">Montant minimum panier <span class="text-gray-500 text-xs dark:text-gray-400">(DT)</span></label>
-              <input
-                type="number"
-                min="0.01"
-                step="0.01"
-                [(ngModel)]="form.minOrderAmount"
-                name="minOrderAmount"
-                placeholder="vide = aucun minimum"
-                class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
-              <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">Le panier doit dépasser ce montant pour appliquer la promo</p>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-1">Réduction maximale <span class="text-gray-500 text-xs dark:text-gray-400">(DT)</span></label>
-              <input
-                type="number"
-                min="0.01"
-                step="0.01"
-                [(ngModel)]="form.maxDiscountAmount"
-                name="maxDiscountAmount"
-                placeholder="vide = aucun plafond"
-                class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white dark:border-gray-600" />
-              <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">Plafonne la réduction totale de cette promo (utile pour limiter les % sur gros panier)</p>
-            </div>
-
-            <label class="flex items-start gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                [(ngModel)]="form.firstOrderOnly"
-                name="firstOrderOnly"
-                class="mt-1 rounded" />
-              <div>
-                <div class="text-sm font-medium">Première commande uniquement</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">Refusée si l'utilisateur a déjà passé une commande</div>
-              </div>
-            </label>
-
-            <label class="flex items-start gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                [(ngModel)]="form.oncePerUser"
-                name="oncePerUser"
-                class="mt-1 rounded" />
-              <div>
-                <div class="text-sm font-medium">Une seule fois par utilisateur</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">Chaque client ne peut bénéficier de cette promo qu'une fois</div>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <div class="flex items-end">
-          <label class="inline-flex items-center gap-2">
-            <input type="checkbox" [(ngModel)]="form.isActive" name="isActive" class="rounded" />
-            <span class="text-sm">Activée</span>
-          </label>
-        </div>
-
-        <div class="col-span-2">
-          <label class="block text-sm font-medium mb-1">
-            Catégories ciblées <span class="text-gray-500 text-xs dark:text-gray-400">(vide = toutes)</span>
-          </label>
-          <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border rounded-lg border-gray-200 dark:border-gray-700">
+      <!-- Stepper indicator -->
+      <div class="px-6 pt-5 pb-2">
+        <div class="flex items-center justify-between gap-2">
+          <ng-container *ngFor="let s of steps; let i = index; let last = last">
             <button
               type="button"
-              *ngFor="let c of categories"
-              (click)="toggleCategory(c.id)"
-              [class]="
-                'px-3 py-1 rounded-full text-xs border transition ' +
-                (form.categoryIds.includes(c.id)
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50')
-              "
-            >
-              {{ c.name }}
+              (click)="goToStep(s.n)"
+              class="flex flex-col items-center gap-1 group flex-shrink-0"
+              [disabled]="loading">
+              <div
+                [class]="
+                  'flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-all border-2 ' +
+                  (currentStep() === s.n
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-md ring-4 ring-blue-100 dark:ring-blue-900/40'
+                    : currentStep() > s.n
+                      ? 'bg-emerald-500 text-white border-emerald-500'
+                      : 'bg-white text-gray-400 border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400')
+                ">
+                <span *ngIf="currentStep() > s.n">✓</span>
+                <span *ngIf="currentStep() <= s.n">{{ s.n }}</span>
+              </div>
+              <div class="hidden sm:block text-center">
+                <div [class]="
+                    'text-xs font-semibold ' +
+                    (currentStep() === s.n
+                      ? 'text-blue-700 dark:text-blue-400'
+                      : currentStep() > s.n
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-gray-500 dark:text-gray-500')
+                  ">{{ s.title }}</div>
+              </div>
             </button>
-          </div>
+            <div *ngIf="!last" class="flex-1 h-0.5 mb-5 rounded-full transition-colors"
+                 [class]="currentStep() > s.n ? 'bg-emerald-400' : 'bg-gray-200 dark:bg-gray-700'"></div>
+          </ng-container>
         </div>
+      </div>
 
-        <div class="col-span-2">
-          <label class="block text-sm font-medium mb-1">
-            Articles ciblés <span class="text-gray-500 text-xs dark:text-gray-400">(vide = tous)</span>
+      <form (ngSubmit)="save()" #f="ngForm" class="flex-1 overflow-y-auto px-6 py-4">
+
+        <!-- ===== STEP 1: Informations ===== -->
+        <div *ngIf="currentStep() === 1" class="space-y-4 animate-fadeIn">
+          <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-900 dark:bg-blue-900/20 dark:border-blue-800/50 dark:text-blue-200">
+            💡 Donnez un nom clair à votre promotion. Il apparaîtra dans le panier et sur les tickets.
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5 dark:text-gray-300">
+              Nom de la promotion <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              [(ngModel)]="form.name"
+              name="name"
+              required
+              placeholder="Ex: Soldes d'été, Black Friday, -20% Bio…"
+              class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:text-white dark:border-gray-600 dark:placeholder-gray-500" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5 dark:text-gray-300">
+              Description <span class="text-gray-400 text-xs font-normal">(optionnel)</span>
+            </label>
+            <textarea
+              [(ngModel)]="form.description"
+              name="description"
+              rows="2"
+              placeholder="Description visible en interne uniquement"
+              class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-white dark:border-gray-600 dark:placeholder-gray-500"></textarea>
+          </div>
+
+          <label class="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/30">
+            <input type="checkbox" [(ngModel)]="form.isActive" name="isActive" class="mt-0.5 h-5 w-5 rounded text-blue-600" />
+            <div>
+              <div class="text-sm font-semibold text-gray-800 dark:text-gray-200">Promotion activée</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">Décocher pour préparer la promo sans la rendre active immédiatement</div>
+            </div>
           </label>
-          <div class="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border rounded-lg border-gray-200 dark:border-gray-700">
-            <button
-              type="button"
-              *ngFor="let p of products"
-              (click)="toggleProduct(p.id)"
-              [class]="
-                'px-3 py-1 rounded-full text-xs border transition ' +
-                (form.menuItemIds.includes(p.id)
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50')
-              "
-            >
-              {{ p.title }}
-            </button>
+        </div>
+
+        <!-- ===== STEP 2: Remise ===== -->
+        <div *ngIf="currentStep() === 2" class="space-y-4 animate-fadeIn">
+          <div class="bg-amber-50 border border-amber-100 rounded-lg p-3 text-xs text-amber-900 dark:bg-amber-900/20 dark:border-amber-800/50 dark:text-amber-200">
+            💰 Définissez le type et le montant de la remise, ainsi que la période de validité.
+          </div>
+
+          <!-- Type cards -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2 dark:text-gray-300">
+              Type de remise <span class="text-red-500">*</span>
+            </label>
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                *ngFor="let t of promotionTypes"
+                (click)="form.type = t.value"
+                [class]="
+                  'p-3 rounded-lg border-2 text-left transition-all ' +
+                  (form.type === t.value
+                    ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-100 dark:bg-blue-900/30 dark:ring-blue-800/40'
+                    : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600')
+                ">
+                <div class="text-2xl mb-1">
+                  <span *ngIf="t.value === 'PERCENT'">%</span>
+                  <span *ngIf="t.value === 'FIXED_AMOUNT'">−</span>
+                  <span *ngIf="t.value === 'FIXED_PRICE'">=</span>
+                </div>
+                <div class="text-sm font-bold text-gray-900 dark:text-white">{{ t.label }}</div>
+                <div class="text-[10px] text-gray-500 mt-0.5 dark:text-gray-400">
+                  <span *ngIf="t.value === 'PERCENT'">Réduction en %</span>
+                  <span *ngIf="t.value === 'FIXED_AMOUNT'">Montant déduit</span>
+                  <span *ngIf="t.value === 'FIXED_PRICE'">Prix final fixe</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Valeur -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5 dark:text-gray-300">
+              Valeur <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                [max]="form.type === 'PERCENT' ? 100 : null"
+                [(ngModel)]="form.value"
+                name="value"
+                required
+                class="w-full border border-gray-300 rounded-lg pl-4 pr-14 py-2.5 bg-white text-gray-900 text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-white dark:border-gray-600" />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500 dark:text-gray-400">
+                {{ promoTypeSuffix(form.type) }}
+              </span>
+            </div>
+            <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">
+              <ng-container [ngSwitch]="form.type">
+                <span *ngSwitchCase="'PERCENT'">Pourcentage de réduction (1 à 100)</span>
+                <span *ngSwitchCase="'FIXED_AMOUNT'">Montant à déduire en DT</span>
+                <span *ngSwitchCase="'FIXED_PRICE'">Prix imposé final en DT</span>
+              </ng-container>
+            </p>
+          </div>
+
+          <!-- Dates -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5 dark:text-gray-300">
+                Date début <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                [(ngModel)]="form.startDate"
+                name="startDate"
+                required
+                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-white dark:border-gray-600" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5 dark:text-gray-300">
+                Date fin <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                [(ngModel)]="form.endDate"
+                name="endDate"
+                required
+                [min]="form.startDate"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-white dark:border-gray-600"
+                [class.border-red-400]="form.startDate && form.endDate && form.endDate < form.startDate" />
+              <p *ngIf="form.startDate && form.endDate && form.endDate < form.startDate"
+                 class="text-xs text-red-600 mt-1">⚠ La date de fin doit être après la date de début</p>
+            </div>
           </div>
         </div>
 
-        <div class="col-span-2 flex justify-end gap-2 pt-4 border-t mt-2">
-          <button type="button" (click)="closeForm()" class="px-4 py-2 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700">
-            Annuler
-          </button>
-          <button
-            type="submit"
-            [disabled]="!isFormValid"
-            class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
-            {{ editing ? 'Mettre à jour' : 'Créer' }}
-          </button>
+        <!-- ===== STEP 3: Cibles ===== -->
+        <div *ngIf="currentStep() === 3" class="space-y-4 animate-fadeIn">
+          <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-3 text-xs text-emerald-900 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-200">
+            🎯 Choisissez les articles auxquels la promo s'applique. Si aucun n'est sélectionné, la promo s'applique à <strong>tous les articles</strong>.
+          </div>
+
+          <!-- Articles -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Articles ciblés
+                <span class="ml-1 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold"
+                  [class]="form.menuItemIds.length > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'">
+                  {{ form.menuItemIds.length || 'Tous' }}
+                </span>
+              </label>
+              <div class="flex gap-1">
+                <button type="button" (click)="selectAllProducts()" class="text-[11px] text-blue-600 hover:underline">Tout</button>
+                <span class="text-gray-300">|</span>
+                <button type="button" (click)="clearProducts()" class="text-[11px] text-gray-600 hover:underline">Aucun</button>
+              </div>
+            </div>
+            <input
+              type="text"
+              [(ngModel)]="productSearch"
+              name="productSearch"
+              placeholder="🔍 Rechercher un article…"
+              class="w-full mb-2 border border-gray-300 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-white dark:border-gray-600" />
+            <div class="flex flex-wrap gap-1.5 max-h-44 overflow-y-auto p-2 border border-gray-200 rounded-lg dark:border-gray-700">
+              <button
+                type="button"
+                *ngFor="let p of filteredProducts()"
+                (click)="toggleProduct(p.id)"
+                [class]="
+                  'px-2.5 py-1 rounded-full text-xs border transition ' +
+                  (form.menuItemIds.includes(p.id)
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600')
+                ">
+                {{ p.title }}
+              </button>
+              <p *ngIf="filteredProducts().length === 0" class="text-xs text-gray-400 px-2 py-1">Aucun article trouvé</p>
+            </div>
+          </div>
         </div>
+
       </form>
+
+      <!-- Footer navigation -->
+      <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between gap-2">
+        <button
+          type="button"
+          (click)="closeForm()"
+          class="px-4 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700">
+          Annuler
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button
+            *ngIf="currentStep() > 1"
+            type="button"
+            (click)="prevStep()"
+            class="px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-white dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+            ← Précédent
+          </button>
+
+          <button
+            *ngIf="currentStep() < totalSteps"
+            type="button"
+            (click)="nextStep()"
+            [disabled]="!isStepValid(currentStep())"
+            class="px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+            Suivant →
+          </button>
+
+          <button
+            *ngIf="currentStep() === totalSteps"
+            type="button"
+            (click)="save()"
+            [disabled]="!isFormValid"
+            class="px-5 py-2 rounded-lg bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+            {{ editing ? '✓ Mettre à jour' : '✓ Créer la promotion' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 

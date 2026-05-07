@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MenuItem } from '../../../../../core/models';
 import { MenuItemsService } from '../../../../../services/menuItems.service';
@@ -54,10 +55,37 @@ export class ItemsComponent implements OnInit, OnDestroy {
   constructor(
     private menuItemsService: MenuItemsService,
     private toaster: CustomToasterService,
+    private route: ActivatedRoute,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
     this.load();
+    // Auto-trigger edit/delete from query param (used when arriving from /admin/dashboard table)
+    this.subs.add(
+      this.route.queryParams.subscribe((params) => {
+        const editId = params['edit'] ? Number(params['edit']) : null;
+        const deleteId = params['delete'] ? Number(params['delete']) : null;
+        if (!editId && !deleteId) return;
+        // Wait for items list to load, then trigger
+        const tryTrigger = () => {
+          if (this.loading || this.items.length === 0) {
+            setTimeout(tryTrigger, 200);
+            return;
+          }
+          if (editId) {
+            const item = this.items.find((i) => i.id === editId);
+            if (item) this.openEdit(item);
+          } else if (deleteId) {
+            const item = this.items.find((i) => i.id === deleteId);
+            if (item) this.remove(item);
+          }
+          // Clear the query param so refresh doesn't re-trigger
+          this.router.navigate([], { queryParams: {}, replaceUrl: true });
+        };
+        tryTrigger();
+      }),
+    );
   }
 
   ngOnDestroy(): void {

@@ -49,8 +49,17 @@ export class FoodCategoryComponent implements OnInit {
   loadAndSelectCategory(category: string): void {}
 
   selectCategory(category: CategoryDTO): void {
-    // Navigate and update the queryParams upon selection
+    // Toggle: clicking the active category clears the filter
+    if (this.selectedCategory == category.id) {
+      this.clearCategory();
+      return;
+    }
     this.router.navigate(['/menu'], { queryParams: { category: category.id } });
+  }
+
+  clearCategory(): void {
+    this.selectedCategory = null;
+    this.router.navigate(['/menu'], { queryParams: { category: null }, queryParamsHandling: 'merge' });
   }
   getCategoryImage(category: CategoryDTO): string {
     if (category.medias.length > 0) {

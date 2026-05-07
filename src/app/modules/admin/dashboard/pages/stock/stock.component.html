@@ -2,16 +2,48 @@
   <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
     <h1 class="text-2xl font-semibold">Mouvements de stock</h1>
     <div class="flex flex-wrap gap-2 items-center">
-      <select
-        [(ngModel)]="filterMenuItemId"
-        (change)="onFilterChange()"
-        class="border rounded-lg px-3 py-2 w-72 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-      >
-        <option [ngValue]="null">Tous les articles</option>
-        <option *ngFor="let p of products" [ngValue]="p.id">
-          {{ p.title }} ({{ p.stockQuantity ?? 0 }})
-        </option>
-      </select>
+      <div class="relative w-80">
+        <input
+          type="text"
+          [(ngModel)]="filterSearch"
+          (focus)="filterDropdownOpen = true"
+          (blur)="onFilterBlur()"
+          [placeholder]="filterMenuItemId ? '' : 'Rechercher un article…'"
+          class="w-full border rounded-lg px-3 py-2 pr-8 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+        <button
+          *ngIf="filterMenuItemId || filterSearch"
+          type="button"
+          (click)="clearFilter()"
+          title="Effacer"
+          class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 text-lg leading-none">
+          ×
+        </button>
+
+        <!-- Dropdown -->
+        <div
+          *ngIf="filterDropdownOpen && filteredProducts().length > 0"
+          class="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto rounded-lg border bg-white shadow-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800">
+          <button
+            type="button"
+            (mousedown)="selectFilterProduct(null)"
+            class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700">
+            Tous les articles
+          </button>
+          <button
+            *ngFor="let p of filteredProducts()"
+            type="button"
+            (mousedown)="selectFilterProduct(p)"
+            class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex justify-between items-center">
+            <span>{{ p.title }}</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ p.stockQuantity ?? 0 }}</span>
+          </button>
+        </div>
+        <div
+          *ngIf="filterDropdownOpen && filterSearch && filteredProducts().length === 0"
+          class="absolute z-20 mt-1 w-full rounded-lg border bg-white shadow-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800 px-3 py-3 text-sm text-gray-500 dark:text-gray-400">
+          Aucun article trouvé
+        </div>
+      </div>
       <button
         (click)="openForm()"
         class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"

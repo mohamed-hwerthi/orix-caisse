@@ -58,7 +58,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   isLoading = true;
   selectedCategory!: number;
   lastCategory!: number;
-  itemsPerPage = 6; // Number of items to load
+  itemsPerPage = 200; // Show up to 200 articles at once (POS use case)
   currentPage = 1;
   showSubmitReviewModal$!: Observable<boolean>;
   showUserReviewsModal$!: Observable<boolean>;
@@ -68,6 +68,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   private cartSubscription?: Subscription;
   barCode?: string;
   seachInput: string = '';
+  showCategoryFilter = false;
   cartItemsCount = 0;
   cartTotal = 0;
   currentCurrency = '';
@@ -121,6 +122,8 @@ export class MenuComponent implements OnInit, OnDestroy {
           // Update selected category and fetch items if necessary
           if (categoryChanged || !this.allMenuItems.length) {
             this.selectedCategory = category;
+            // Auto-close the filter drawer after a category change
+            if (this.showCategoryFilter) this.showCategoryFilter = false;
             return this.menuItemsService.getAllMenuItems(1, 100);
           } else {
             return [];
@@ -254,26 +257,21 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.cartSubscription?.unsubscribe();
   }
   addToCart(item: MenuItem): void {
-    this.store
-      .select(selectCartItems)
-      .pipe(
-        take(1), // Take the first item only and automatically unsubscribe, prevents duplicates in cart
-        map((items: MenuItem[]) => {
-          const exists = items.some((existingItem) => existingItem.id === item.id);
-          if (exists) {
-            this.toastr.info('Item is already added', '', {
-              positionClass: 'custom-toast-top-right',
-            });
-          } else {
-            this.toastr.success('Item added to cart!', '', {
-              positionClass: 'custom-toast-top-right',
-            });
-            this.store.dispatch(addItem({ item }));
-          }
-        }),
-      )
-      .subscribe();
+    // Reducer dedups + increments — scanning the same barcode twice now adds qty=2.
+    this.store.dispatch(addItem({ item }));
+    this.toastr.success(`${item.title} ajouté`, '', {
+      positionClass: 'custom-toast-top-right',
+      timeOut: 1500,
+    });
   }
+  toggleCategoryFilter(): void {
+    this.showCategoryFilter = !this.showCategoryFilter;
+  }
+
+  closeCategoryFilter(): void {
+    this.showCategoryFilter = false;
+  }
+
   goToSalesHistory(): void {
     this.router.navigate(['/sales-history']);
   }

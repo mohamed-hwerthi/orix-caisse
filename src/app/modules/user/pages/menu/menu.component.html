@@ -17,7 +17,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
           </svg>
-          Historique
+          Statistiques
         </button>
 
         <button (click)="goToAdmin()"
@@ -59,18 +59,28 @@
               placeholder="Rechercher par code-barres"
               (change)="filterMenuItemsByBarCode()" />
           </div>
+
+          <!-- Filtres button (opens category drawer) -->
+          <button
+            type="button"
+            (click)="toggleCategoryFilter()"
+            class="shrink-0 flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition hover:border-primary hover:bg-rose-50 hover:text-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+            </svg>
+            Filtres
+            <span *ngIf="selectedCategory"
+              class="ml-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white">1</span>
+          </button>
         </div>
       </div>
     </div>
 
-    <app-food-category *ngIf="!isLoading"></app-food-category>
-    <app-food-category-skeleton *ngIf="isLoading"></app-food-category-skeleton>
-
     <div class="container mx-auto px-2 pb-24 pt-4 overflow-auto">
-      <!-- Bandeau Promotions du moment -->
+      <!-- Bandeau Promotions du moment (uses theme primary color) -->
       <div
         *ngIf="!isLoading && activePromotions.length > 0"
-        class="mb-4 overflow-x-auto rounded-2xl bg-gradient-to-r from-rose-500 to-pink-600 p-4 text-white shadow-md">
+        class="mb-4 overflow-x-auto rounded-2xl bg-primary bg-gradient-to-r from-primary to-primary/80 p-4 text-primary-foreground shadow-md">
         <div class="mb-2 flex items-center gap-2">
           <span class="text-lg">🎉</span>
           <h2 class="text-base font-extrabold">Promotions du moment</h2>
@@ -140,7 +150,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
               <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
             </svg>
-            Historique
+            Statistiques
           </button>
 
           <button (click)="goToAdmin()"
@@ -197,6 +207,10 @@
             <p class="mt-4 text-center text-xs text-gray-400 dark:text-gray-500">
               💡 L'article sera automatiquement ajouté au panier
             </p>
+            <div class="mt-2 flex flex-wrap items-center justify-center gap-3 text-[11px] text-gray-400 dark:text-gray-500">
+              <span><kbd class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 font-mono text-gray-600 dark:text-gray-300">F9</kbd> Encaisser</span>
+              <span><kbd class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 font-mono text-gray-600 dark:text-gray-300">F12</kbd> Vider et rescanner</span>
+            </div>
           </div>
 
           <!-- Last scanned article -->
@@ -252,6 +266,37 @@
     </div>
   }
 </div>
+
+<!-- Category filter drawer (slide-in from left) -->
+@if(isDisplayingOnlyBarCoes$ | async) {
+  <!-- Backdrop -->
+  <div
+    *ngIf="showCategoryFilter"
+    (click)="closeCategoryFilter()"
+    class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity"></div>
+
+  <!-- Drawer -->
+  <aside
+    [class]="
+      'fixed left-0 top-0 bottom-0 z-50 w-72 bg-white shadow-2xl border-r border-gray-200 dark:bg-gray-900 dark:border-gray-700 transform transition-transform duration-300 ease-out flex flex-col ' +
+      (showCategoryFilter ? 'translate-x-0' : '-translate-x-full')
+    ">
+    <div class="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+      <div class="flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5 text-primary">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+        </svg>
+        <h3 class="text-base font-bold text-gray-900 dark:text-white">Filtres</h3>
+      </div>
+      <button (click)="closeCategoryFilter()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none dark:hover:text-gray-200">×</button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-4">
+      <h4 class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2 dark:text-gray-400">Catégories</h4>
+      <app-food-category></app-food-category>
+    </div>
+  </aside>
+}
 
 <!-- Modals (only in catalogue mode) -->
 @if(isDisplayingOnlyBarCoes$ | async) {

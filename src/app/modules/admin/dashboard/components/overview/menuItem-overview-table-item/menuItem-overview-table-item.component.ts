@@ -1,32 +1,28 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { Router } from '@angular/router';
 import { MenuItem } from '../../../../../../core/models';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
-import { Store } from '@ngrx/store';
-import {
-  openDeleteMenuItemModal,
-  openUpdateMenuItemModal,
-} from '../../../../../../core/state/modal/menuItem/modal.actions';
 
 @Component({
   selector: '[menuItem-overview-table-item]',
   templateUrl: './menuItem-overview-table-item.component.html',
   standalone: true,
-  imports: [AngularSvgIconModule, CurrencyPipe, ButtonComponent,CommonModule],
+  imports: [AngularSvgIconModule, CurrencyPipe, ButtonComponent, CommonModule],
 })
 export class MenuItemOverviewTableItemComponent implements OnInit {
   @Input() menuItem: MenuItem = <MenuItem>{};
-  constructor(private store: Store) {}
+  constructor(private router: Router) {}
 
   ngOnInit(): void {}
 
   openUpdateModal() {
-    this.store.dispatch(openUpdateMenuItemModal({ menuItem: this.menuItem }));
+    this.router.navigate(['/admin/items'], { queryParams: { edit: this.menuItem.id } });
   }
 
   openDeleteModal() {
-    this.store.dispatch(openDeleteMenuItemModal({ menuItemId: this.menuItem.id }));
+    this.router.navigate(['/admin/items'], { queryParams: { delete: this.menuItem.id } });
   }
 
   truncateDescription(description: string, maxLength: number = 25): string {

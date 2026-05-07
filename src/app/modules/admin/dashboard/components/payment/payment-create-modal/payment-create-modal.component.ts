@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { MessageService } from 'primeng/api';
@@ -19,8 +19,9 @@ export interface PaymentDetails {
   templateUrl: './payment-create-modal.component.html',
   styleUrl: './payment-create-modal.component.scss',
 })
-export class PaymentCreateModalComponent implements OnInit {
+export class PaymentCreateModalComponent implements OnInit, AfterViewInit {
   [x: string]: any;
+  @ViewChild('amountInput') amountInput?: ElementRef<HTMLInputElement>;
   orderTotal!: number;
   instance: DynamicDialogComponent | undefined;
   receuivedAmount!: number;
@@ -31,12 +32,17 @@ export class PaymentCreateModalComponent implements OnInit {
     public ref: DynamicDialogRef,
     private readonly dialogService: DialogService,
     private readonly messageService: MessageService,
-    private readonly toasterService:ToastrService
+    private readonly toasterService: ToastrService,
   ) {
     this.instance = this.dialogService.getInstance(this.ref);
   }
+
   ngOnInit(): void {
     this.onPaymentModalOpened();
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.amountInput?.nativeElement?.focus(), 50);
   }
 
   onPaymentModalOpened() {
@@ -44,24 +50,40 @@ export class PaymentCreateModalComponent implements OnInit {
       this.orderTotal = this.instance.data.orderTotal;
     }
   }
+
   onSelectingReceivedAmount() {
-    this.amountToChange = parseFloat((this.receuivedAmount - this.orderTotal).toFixed(2)); // this.receuivedAmount - this.orderTotal
+    this.amountToChange = parseFloat((this.receuivedAmount - this.orderTotal).toFixed(2));
   }
+
+  pickQuickAmount(amount: number): void {
+    this.receuivedAmount = amount;
+    this.onSelectingReceivedAmount();
+    setTimeout(() => this.amountInput?.nativeElement?.focus(), 0);
+  }
+
+  get isValid(): boolean {
+    return this.receuivedAmount != null && this.receuivedAmount >= this.orderTotal;
+  }
+
+  onEnter(): void {
+    if (this.isValid) this.submitPaymentModal();
+  }
+
   closeModal() {
     this.ref.close();
   }
 
   submitPaymentModal(): void {
-    let paymentData: PaymentDetails = {
+    if (!this.isValid) return;
+    const paymentData: PaymentDetails = {
       orderTotal: this.orderTotal,
       amountToChange: this.amountToChange,
       receivedAmount: this.receuivedAmount,
     };
-    this.handleSuccessToast('Les données de Payment sont bien Enregistrés  ');
     this.ref.close(paymentData);
   }
 
   handleSuccessToast(message: string) {
-    this.toasterService.success(message)
+    this.toasterService.success(message);
   }
 }

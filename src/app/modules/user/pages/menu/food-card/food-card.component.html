@@ -1,13 +1,24 @@
 <div @fadeInOut
-  (click)="addToCart(item)"
+  (click)="onCardClick($event)"
   role="button"
   tabindex="0"
-  (keydown.enter)="addToCart(item)"
-  class="group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-rose-300 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800">
+  (keydown.enter)="onCardClick($event)"
+  [class]="
+    'group relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 dark:border-gray-700 dark:bg-gray-800 ' +
+    (isOutOfStock ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:-translate-y-1 hover:border-rose-300 hover:shadow-xl')
+  ">
 
   <!-- Promo badge -->
-  <div *ngIf="hasPromo" class="absolute top-2 left-2 z-10 rounded-full bg-rose-500 px-2.5 py-1 text-xs font-bold text-white shadow-md">
+  <div *ngIf="hasPromo && !isOutOfStock" class="absolute top-2 left-2 z-10 rounded-full bg-rose-500 px-2.5 py-1 text-xs font-bold text-white shadow-md">
     {{ promoLabel }}
+  </div>
+
+  <!-- Stock badge (top-right) -->
+  <div *ngIf="isOutOfStock" class="absolute top-2 right-2 z-10 rounded-full bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-md">
+    🚨 Rupture
+  </div>
+  <div *ngIf="!isOutOfStock && isLowStock" class="absolute top-2 right-2 z-10 rounded-full bg-orange-500 px-2.5 py-1 text-xs font-bold text-white shadow-md">
+    ⚠ Bas
   </div>
 
   <!-- Image / Placeholder -->
@@ -43,26 +54,36 @@
       {{ item.title }}
     </h3>
 
-    <div class="mt-1.5 flex items-baseline gap-1.5">
-      <ng-container *ngIf="hasPromo; else regularPrice">
-        <span class="text-xl font-extrabold text-rose-600">
-          {{ appliedPrice | number: '1.2-2' }}
-        </span>
-        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-          {{ item.currency.symbol }}
-        </span>
-        <span class="text-xs text-gray-400 line-through">
-          {{ item.price | number: '1.2-2' }}
-        </span>
-      </ng-container>
-      <ng-template #regularPrice>
-        <span class="text-xl font-extrabold text-primary">
-          {{ item.price | number: '1.2-2' }}
-        </span>
-        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
-          {{ item.currency.symbol }}
-        </span>
-      </ng-template>
+    <div class="mt-1.5 flex items-baseline justify-between gap-1.5">
+      <div class="flex items-baseline gap-1.5 min-w-0">
+        <ng-container *ngIf="hasPromo; else regularPrice">
+          <span class="text-xl font-extrabold text-rose-600">
+            {{ appliedPrice | number: '1.2-2' }}
+          </span>
+          <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+            {{ item.currency?.symbol }}
+          </span>
+          <span class="text-xs text-gray-400 line-through">
+            {{ item.price | number: '1.2-2' }}
+          </span>
+        </ng-container>
+        <ng-template #regularPrice>
+          <span class="text-xl font-extrabold text-primary">
+            {{ item.price | number: '1.2-2' }}
+          </span>
+          <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+            {{ item.currency?.symbol }}
+          </span>
+        </ng-template>
+      </div>
+      <span [class]="
+        'text-[10px] font-semibold px-1.5 py-0.5 rounded ' +
+        (isOutOfStock ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
+         isLowStock ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
+         'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300')
+      ">
+        {{ item.stockQuantity ?? 0 }} en stock
+      </span>
     </div>
   </div>
 </div>

@@ -18,12 +18,13 @@ import { ButtonComponent } from 'src/app/shared/components/button/button.compone
 import { environment } from 'src/environments/environment';
 import { MenuItem, OrderSubmission, User } from '../../../../../core/models';
 import { selectCurrentUser } from '../../../../../core/state/auth/auth.selectors';
-import { clearCart, removeItem } from '../../../../../core/state/shopping-cart/cart.actions';
+import { clearCart, decrementItem, incrementItem, removeItem, setItemQuantity } from '../../../../../core/state/shopping-cart/cart.actions';
 import { selectCartItems } from '../../../../../core/state/shopping-cart/cart.selectors';
 import { CartVisibilityService } from '../../../../../services/cart-visibility.service';
 import { OrdersService } from '../../../../../services/orders.service';
 import { MenuItemsService } from '../../../../../services/menuItems.service';
 import { PromotionEngineService } from '../../../../../services/promotion-engine.service';
+import { SoundService } from '../../../../../services/sound.service';
 import { LoaderComponent } from '../../../../../shared/components/loader/loader.component';
 import {
   OrderProgressModalComponent,
@@ -76,11 +77,7 @@ export class CartComponent implements OnInit {
         break;
       case 'F9':
         event.preventDefault();
-        if (this.cartItems.length > 0) this.openPaymentDialog();
-        break;
-      case 'F10':
-        event.preventDefault();
-        if (this.cartItems.length > 0 && !this.isLoading) this.placeOrderAndPrintTicket();
+        if (this.cartItems.length > 0 && !this.isLoading) this.openPaymentDialog();
         break;
       case 'Delete':
         if (event.ctrlKey || event.metaKey) {
@@ -89,6 +86,15 @@ export class CartComponent implements OnInit {
             this.store.dispatch(clearCart());
           }
         }
+        break;
+      case 'F12':
+        // Quick clear & rescan — no confirmation, refocus barcode input
+        event.preventDefault();
+        if (this.cartItems.length > 0) {
+          this.store.dispatch(clearCart());
+          this.toastr.info('Panier vidé', '', { positionClass: 'custom-toast-top-right', timeOut: 1200 });
+        }
+        setTimeout(() => this.focusInput('codeBarreScan') || this.focusInput('codeBarre'), 30);
         break;
       case 'F2':
         event.preventDefault();
@@ -149,6 +155,7 @@ export class CartComponent implements OnInit {
     private readonly invoiceService: InvoiceService,
     private readonly promotionEngine: PromotionEngineService,
     private readonly menuItemsService: MenuItemsService,
+    private readonly soundService: SoundService,
   ) {
     this.isDisplayingOnlyBarCoes$! = sharedService.getIsBarcodeOnlyMode();
 
@@ -156,20 +163,21 @@ export class CartComponent implements OnInit {
       .select(selectCartItems)
       .pipe(
         map((items) => {
-          return items.map((storeItem) => {
+          return items.map((storeItem: any) => {
             const existingItem = this.cartItems.find((item) => item.id === storeItem.id);
-            return {
-              ...storeItem,
-
-              quantityToSale: existingItem ? existingItem.quantityToSale : 1,
-            };
+            // Trust the store's quantityToSale (incremented when scanning twice).
+            // Fall back to local value if store doesn't have one yet (legacy state).
+            const qty = storeItem.quantityToSale ?? existingItem?.quantityToSale ?? 1;
+            return { ...storeItem, quantityToSale: qty };
           }) as CartItem[];
         }),
       )
       .subscribe((items) => {
         this.cartItems = items;
         this.calculateTotalPrice();
-        this.currentCurrency = this.cartItems[0].currency.symbol;
+        if (this.cartItems.length > 0 && this.cartItems[0].currency) {
+          this.currentCurrency = this.cartItems[0].currency.symbol;
+        }
       });
     this.currentUser$ = this.store.pipe(select(selectCurrentUser));
   }
@@ -191,21 +199,12 @@ export class CartComponent implements OnInit {
     });
   }
   increaseQuantity(cartItem: CartItem): void {
-    if(cartItem.quantityToSale>cartItem.quantity){
-      this.toastr.error('Quantity unavailable');
-      return ;
-    }
-    const item = this.cartItems.find((i) => i.id === cartItem.id);
-    if (item) {
-      item.quantityToSale += 1;
-      this.calculateTotalPrice();
-    }
+    this.store.dispatch(incrementItem({ itemId: cartItem.id }));
   }
 
   decreaseQuantity(cartItem: CartItem): void {
     if (cartItem.quantityToSale > 1) {
-      cartItem.quantityToSale -= 1;
-      this.calculateTotalPrice();
+      this.store.dispatch(decrementItem({ itemId: cartItem.id }));
     }
   }
 
@@ -233,11 +232,9 @@ export class CartComponent implements OnInit {
 
   onQuantityChange(event: Event, cartItem: CartItem): void {
     const inputElement = event.target as HTMLInputElement;
-    
     const quantityToSale = inputElement.valueAsNumber;
     if (quantityToSale && quantityToSale > 0) {
-      cartItem.quantityToSale = quantityToSale;
-      this.calculateTotalPrice();
+      this.store.dispatch(setItemQuantity({ itemId: cartItem.id, quantity: quantityToSale }));
     }
   }
 
@@ -246,7 +243,6 @@ export class CartComponent implements OnInit {
   }
 
   openPaymentDialog() {
-    const formattedTotalPrice = this.totalPrice.toFixed(2);
     this.ref = this.dialogService.open(PaymentCreateModalComponent, {
       width: '480px',
       modal: true,
@@ -256,13 +252,21 @@ export class CartComponent implements OnInit {
         '640px': '90vw',
       },
       data: {
-        orderTotal: formattedTotalPrice,
+        orderTotal: this.totalPrice,
       },
     });
     this.ref.onClose.subscribe((dialogPaymentData: PaymentDetails) => {
-      if (dialogPaymentData) {
+      if (dialogPaymentData && this.cartItems.length > 0 && !this.isLoading) {
         this.paymentDetail = dialogPaymentData;
-        console.log(dialogPaymentData);
+        if (dialogPaymentData.amountToChange > 0) {
+          this.toastr.info(
+            `Rendre ${dialogPaymentData.amountToChange.toFixed(2)} TND au client`,
+            '',
+            { positionClass: 'custom-toast-top-right', timeOut: 5000 },
+          );
+        }
+        // Place order + print ticket immediately — no extra click needed
+        this.placeOrderAndPrintTicket();
       }
     });
   }
@@ -330,6 +334,9 @@ export class CartComponent implements OnInit {
       this.ordersService.createOrder(orderData).subscribe({
         next: (order) => {
           this.lastOrderId = order.id;
+
+          // 🔔 Play success chime — pleasant register-style sound
+          this.soundService.playCashIn();
 
           // Order placed → success immediately. Invoice downloads in BACKGROUND (don't block cashier).
           this.orderProgressState = 'done';
@@ -407,6 +414,7 @@ export class CartComponent implements OnInit {
 
       this.ordersService.createOrder(orderData).subscribe({
         next: (order) => {
+          this.soundService.playCashIn();
           this.toastr.success('Order placed successfully!');
           this.store.dispatch(clearCart());
           this.cartVisibilityService.toggleCart();

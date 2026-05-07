@@ -62,6 +62,25 @@ export class FoodCardComponent {
     }
   }
 
+  get isOutOfStock(): boolean {
+    return (this.item.stockQuantity ?? 0) <= 0;
+  }
+
+  get isLowStock(): boolean {
+    const qty = this.item.stockQuantity ?? 0;
+    const seuil = this.item.minStockAlert ?? 0;
+    return qty > 0 && qty <= seuil;
+  }
+
+  onCardClick(event: Event): void {
+    if (this.isOutOfStock) {
+      event.preventDefault();
+      this.toastr.error(`"${this.item.title}" est en rupture`, '', { positionClass: 'custom-toast-top-right' });
+      return;
+    }
+    this.addToCart(this.item);
+  }
+
   onImageLoad(): void {
     this.imageLoaded = true;
   }
@@ -79,25 +98,12 @@ export class FoodCardComponent {
   }
 
   addToCart(item: MenuItem): void {
-    this.store
-      .select(selectCartItems)
-      .pipe(
-        take(1),
-        map((items: MenuItem[]) => {
-          const exists = items.some((existingItem) => existingItem.id === item.id);
-          if (exists) {
-            this.toastr.info('Item is already added', '', {
-              positionClass: 'custom-toast-top-right',
-            });
-          } else {
-            this.toastr.success('Item added to cart!', '', {
-              positionClass: 'custom-toast-top-right',
-            });
-            this.store.dispatch(addItem({ item }));
-          }
-        }),
-      )
-      .subscribe();
+    // Reducer handles dedup + increment — clicking the same card twice now adds qty=2.
+    this.store.dispatch(addItem({ item }));
+    this.toastr.success(`${item.title} ajouté`, '', {
+      positionClass: 'custom-toast-top-right',
+      timeOut: 1500,
+    });
   }
 
   getMenuItemImage(): string {
