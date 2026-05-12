@@ -290,10 +290,7 @@ export class ItemsComponent implements OnInit, OnDestroy {
       e['sku'] = 'SKU : 2-50 caractères (lettres, chiffres, - ou _)';
     }
 
-    // Code-barres
-    if (f.barCode && !/^[0-9]{6,14}$/.test(f.barCode)) {
-      e['barCode'] = 'Code-barres : 6 à 14 chiffres';
-    }
+    // Code-barres: validation supprimée
 
     // Prix vente
     if (f.price == null || isNaN(Number(f.price))) {
